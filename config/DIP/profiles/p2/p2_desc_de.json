@@ -1,0 +1,32 @@
+{
+  "no": 3,
+  "shortName": "Technisch",
+  "recommendation": "Empfohlen für technisch interessierte Nutzer*innen",
+  "repInfo": null,
+  "deliveryInfo": null,
+  "fullDesc": {
+    "desc": [
+      "Das Wissenschaftliche Profil ist an die Ansprüche wissenschaftlicher Nutzer angepasst.",
+      "Es enthält eine Auswahl von Metadaten, die nach inhaltlichen Gesichtspunkten zusammengestellt wurden und das wissenschaftliche Verständnis des Inhalts sicherstellen. Zudem enthält es alle Metadaten, die zur Nachvollziehbarkeit der Authentizität und Integrität der Archivalien nötig sind. Dazu gehören z.B. Prüfsummen, Ingest- und Migrationsprotokolle.",
+      "Die IEs können in jeder gewünschten AIP-Version ausgeliefert werden, so dass sichergestellt ist, dass die Nutzer bei entsprechendem technischen Wissen selbstständig mögliche Veränderungen zwischen AIP-Versionen nachvollziehen können. Es wird davon ausgegangen, dass wissenschaftliche und behördliche Nutzer selbst dazu in der Lage sind, einzuschätzen, welche Repräsentation sie in ihrer technischen Umgebung öffnen und lesen können. Je nach gewählter Repräsentation kann die Möglichkeit für computergestützte Analysen (wegen vereinfachter Dateiformate) eingeschränkt sein."
+    ],
+    "suitability": [
+      "Das DIP-Profil 2 ist geeignet für z.B. Historiker/innen, Student/innen, sonstige Forscher/innen. Es kann außerdem für Behörden geeignet sein, wenn diese Informationen mit besonderer Berücksichtigung der Authentizität der Dokumente nachschlagen wollen."
+    ],
+    "ieLevel": [
+      "Alle Metadaten werden übernommen."
+    ],
+    "itemLevel": [
+      "Alle inhaltlichen Metadaten werden übernommen. Alle technischen Metadaten, die der Bestandsbildner seinerzeit sehen konnte, sowie Metadaten aus Fachverfahren und DMS werden übernommen."
+    ],
+    "archivalProcess": [
+      "Grundlegende Daten, wie das Datum der Lieferung bzw. Freigabe oder Datum, Anlass und Durchführung einer Migration sind für das Profil 2 relevant. Außerdem alle Daten, die zur Nachvollziehbarkeit der Integrität nötig sind (z.B. Prüfsummen). Andere technische Daten hingegen, z.B. die Angaben zur Validierung und Klassifikation des Dateiformats sind als irrelevant einzustufen und können bei Bedarf vom Nutzer nachgefragt werden."
+    ],
+    "representations": [
+      "Standardmäßig werden die Ursprungsversion und die aktuellste AIP-Version ausgeliefert. Nutzer haben jedoch die Möglichkeit, eine eigene Auswahl zu treffen."
+    ],
+    "other": [
+
+    ]
+  }
+}

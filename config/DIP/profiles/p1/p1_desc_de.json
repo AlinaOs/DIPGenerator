@@ -1,0 +1,32 @@
+{
+  "no": 1,
+  "shortName": "Standard",
+  "recommendation": "Empfohlen für private Nutzer*innen",
+  "repInfo": "Im DIP-Profil 1 können Sie keine Repräsentationen auswählen. Wir wählen für Sie die Repräsentation aus, die Sie am einfachsten auf Ihrem Computer öffnen können.",
+  "deliveryInfo": null,
+  "fullDesc": {
+    "desc": [
+      "Das Standard-Profil ist an die Ansprüche privater Nutzer angepasst.",
+      "Es enthält eine Auswahl von Metadaten, die nach inhaltlichen Gesichtspunkten zusammengestellt wurden und das adäquate Verständnis des Inhalts sicherstellen. Technische Daten wie Prüfsummen, Ingest-Protokolle etc. werden nicht angezeigt.",
+      "Die IEs werden in ihrem jeweils aktuellsten AIP und – falls vorhanden – als Nutzungsrepräsentation ausgeliefert, so dass sichergestellt ist, dass die Dateien problemlos auch von unerfahrenen Nutzern mit gängigen Programmen geöffnet und gelesen werden können. So ist eine inhaltliche Auswertung relevanter Einzelstücke möglich, jedoch kann die Möglichkeit für computergestützte Analysen (wegen vereinfachter Dateiformate) oder die Untersuchung der Authentizität (wegen fehlender Metadaten) eingeschränkt sein."
+    ],
+    "suitability": [
+      "Das DIP-Profil 1 ist geeignet für z.B. Familienforscher, Schüler/innen, historisch interessierte Privatpersonen. Je nach Nutzungsinteresse ist es auch für Behörden ausreichend, die basale Informationen nachschlagen wollen."
+    ],
+    "ieLevel": [
+      "Alle zum Verständnis relevanten Informationen werden ausgeliefert."
+    ],
+    "itemLevel": [
+      "Basale technische Informationen zu den Dateien, wie z.B. Größe und Format, werden ausgeliefert. Prüfsummen oder andere technische Daten sind nicht nötig."
+    ],
+    "archivalProcess": [
+      "Aus dem digitalen Archivierungsprozess werden keine Metadaten übernommen."
+    ],
+    "representations": [
+      "Standardmäßig wird nur die aktuellste Migrationsstufe ausgeliefert, da sie am einfachsten zu benutzen ist. Der Nutzer muss also keine Repräsentation selbst auswählen."
+    ],
+    "other": [
+
+    ]
+  }
+}

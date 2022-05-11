@@ -1,0 +1,30 @@
+{
+  "no": 3,
+  "shortName": "Technisch",
+  "recommendation": "Empfohlen für technisch interessierte Nutzer*innen",
+  "repInfo": null,
+  "deliveryInfo": null,
+  "fullDesc": {
+    "desc": [
+      "Das Technische Profil ist an die Ansprüche von Nutzern angepasst, die die technischen Eigenschaften der Archivalien untersuchen möchten oder computergestützte Analysen über ihren Inhalt machen möchten.",
+      "Es enthält ungefiltert alle Metadaten (zur IE, zu allen Items, zum Archivierungsprozess etc.) und enthält standardmäßig alle AIP-Versionen. Computergestützte Analysen sind je nach Dateiformat der Archivalien problemlos möglich. Auch die Metadaten können computergestützt ausgewertet werden.",
+      "Es wird davon ausgegangen, dass technisch interessierte Nutzer dazu in der Lage sind, die Metadaten selbst adäquat zu interpretieren und die Archivalien in einer geeigneten Systemumgebung zu öffnen/auszuwerten."
+    ],
+    "suitability": [
+      "Das DIP-Profil 3 ist nur für technisch versierte Nutzer geeignet. Es ist wegen der großen Menge an schwierig zu interpretierender Information i.d.R. ungeeignet für private Nutzer. Für wissenschaftliche oder behördliche Nutzer ist dieses Profil hauptsächlich dann geeignet bzw. nötig, wenn die technischen Daten ein zentrales Ziel bzw. Mittel ihrer Untersuchung darstellen. Denkbar wäre z.B. eine Nutzung durch Technik-Historiker/innen und Forscher/innen aus den Digital Humanities auf der wissenschaftlichen Seite, sowie durch digitale Forensiker/innen oder mit der elektronischen LZA befasste Archivar/innen auf der behördlichen Seite."
+    ],
+    "ieLevel": [
+      "Alle Metadaten werden übernommen, sofern sie nicht aus rechtlichen Gründen zurückgehalten werden."
+    ],
+    "itemLevel": [
+      "Alle Metadaten werden übernommen, sofern sie nicht aus rechtlichen Gründen zurückgehalten werden."
+    ],
+    "archivalProcess": [
+      "Alle Metadaten werden übernommen, sofern sie nicht aus rechtlichen Gründen zurückgehalten werden."
+    ],
+    "representations": [
+      "Standardmäßig werden alle AIP-Versionen ausgeliefert. Nutzer haben jedoch die Möglichkeit, nur eine Auswahl an AIPs einzusehen."
+    ],
+    "other": null
+  }
+}

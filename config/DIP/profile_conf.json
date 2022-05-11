@@ -1,0 +1,73 @@
+{
+    "IEInfoExtraction": "PH.xsl",
+    "VZInfoExtraction": "PH.xsl",
+    "type": "UNIVERSAL",
+    "issuedBy": "DE-2143",
+    "generatorName": "DiPS DIP-Generierungsmodul",
+    "generatorVersion": "1.0",
+    "outputPath": "./output",
+    "standardProfile": "profile1",
+    "ProfileConfigs": {
+        "profile0": {
+            "DIPGeneration": false,
+            "xsl": "DIP-Profiles/DIP-0/0_xsl.xsl",
+            "desc": "DIP-Profiles/DIP-0/0_desc.yaml",
+            "xsd": "DIP-Profiles/DIP-0/DIP-Profile-0.xsd",
+            "AIPChoice": true,
+            "defaultAIP": "latest",
+            "deliveryChoice": false,
+            "defaultDelivery": "download",
+            "profileMetadata":{
+                "profileNumber": 0,
+                "profileDescription": "Roh-AIP",
+                "profileVersion": "development"
+            }
+        },
+        "profile1": {
+            "DIPGeneration": true,
+            "xsl": "DIP-Profiles/DIP-1/1_xsl.xsl",
+            "desc": "DIP-Profiles/DIP-1/1_desc.yaml",
+            "xsd": "DIP-Profiles/DIP-1/DIP-Profile-1.xsd",
+            "AIPChoice": false,
+            "defaultAIP": "latest",
+            "deliveryChoice": true,
+            "defaultDelivery": "viewer",
+            "profileMetadata":
+                {
+                    "profileNumber": 1,
+                    "profileDescription": "Standard",
+                    "profileVersion": "development"
+                }
+        },
+        "profile2": {
+            "DIPGeneration": true,
+            "xsl": "DIP-Profiles/DIP-2/2_xsl.xsl",
+            "desc": "DIP-Profiles/DIP-2/2_desc.yaml",
+            "xsd": "DIP-Profiles/DIP-2/DIP-Profile-2.xsd",
+            "AIPChoice": true,
+            "defaultAIP": "frame",
+            "deliveryChoice": true,
+            "defaultDelivery": "both",
+            "profileMetadata": {
+                "profileNumber": 2,
+                "profileDescription": "Wissenschaftlich",
+                "profileVersion": "development"
+            }
+        },
+        "profile3": {
+            "DIPGeneration": true,
+            "xsl": "DIP-Profiles/DIP-3/3_xsl.xsl",
+            "desc": "DIP-Profiles/DIP-3/3_desc.yaml",
+            "xsd": "DIP-Profiles/DIP-3/DIP-Profile-0.xsd",
+            "AIPChoice": true,
+            "defaultAIP": "all",
+            "deliveryChoice": true,
+            "defaultDelivery": "download",
+            "profileMetadata": {
+                "profileNumber": 3,
+                "profileDescription": "Technisch",
+                "profileVersion": "development"
+            }
+        }
+    }
+}
