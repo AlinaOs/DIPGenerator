@@ -1,6 +1,8 @@
+import gc
 import os
+import re
 from abc import ABC, abstractmethod
-import tempfile
+import xml.etree.cElementTree as ET
 import tarfile
 
 delim = "\\"
@@ -12,27 +14,9 @@ class AbstractIP(ABC):
         self.ipid = None
         self.temp = temp
         self.files = []
+        self.formats = []
         self.metadata = None
-
-    # @property
-    # def path(self):
-    #     return self._path
-    #
-    # @property
-    # def temp(self):
-    #     return self.temp
-    #
-    # @property
-    # def ipid(self):
-    #     return self.ipid
-    #
-    # @property
-    # def metadata(self):
-    #     return self.metadata
-    #
-    # @property
-    # def files(self):
-    #     return self.files
+        self.ieinfo = {}
 
     def save(self, path):
         pass
@@ -40,75 +24,87 @@ class AbstractIP(ABC):
     def delete(self):
         pass
 
-    def __unpack__(self):
-        tar = tarfile.open(self.__path__)
-        # Open tar to read
-        # Or unpack to temporary directory?
-        # https://docs.python.org/3/library/tarfile.html#examples
-        files = tar.getmembers()
-
-        tar.close()
-
-    # @path.setter
-    # def path(self, value):
-    #     self._path = value
-    #
-    # @temp.setter
-    # def temp(self, value):
-    #     self._temp = value
-    #
-    # @files.setter
-    # def files(self, value):
-    #     self._files = value
-    #
-    # @metadata.setter
-    # def metadata(self, value):
-    #     self._metadata = value
-    #
-    # @ipid.setter
-    # def ipid(self, value):
-    #     self._ipid = value
-
 
 class AIP(AbstractIP):
 
     def __init__(self, path, temp):
         super().__init__(path, temp)
         self.parent = None
-        self.preservationLevels = None
-        self.itemIDs = None
+        self.preservationLevels = []
+        self.itemIDs = []
         self.index = None
+        self.filenames = []
+        self.sizes = []
         self.ieid = None
         self.date = None
         self.initSuccess = False
         self.__parse__()
 
     def __parse__(self):
-        tar = tarfile.open(self.path)
-        # Open tar to read
-        # Or unpack to temporary directory?
-        # https://docs.python.org/3/library/tarfile.html#examples
-        files = tar.getmembers()
-        for f in files:
-            if f.name == "DIPSARCH.xml":
-                tar.extractall(path=self.temp.name, members=[f])
-                self.metadata = self.temp.name + delim + "DIPSARCH.xml"
-                os.rename(self.temp.name+delim+"DIPSARCH.xml", self.temp.name+delim+"123.xml")
-                print("DIPSARCH found:")
-                self.extractmetadata()
-                self.metadata = self.temp.name + delim + str(self.ipid) + ".xml"
-                print(self.metadata)
-            else:
-                self.files.append(f.name)
-        tar.close()
-        print(self.files)
+        with tarfile.open(self.path) as tar:
+            files = tar.getmembers()
+            for f in files:
+                if f.name == "DIPSARCH.xml":
+                    tar.extractall(path=self.temp.name, members=[f])
+                    self.metadata = self.temp.name + delim + "DIPSARCH.xml"
+                else:
+                    self.files.append(f.name)
+
+        self.extractmetadata()
+        os.rename(self.metadata, self.temp.name + delim + str(self.ipid)+".xml")
+        self.metadata = self.temp.name + delim + str(self.ipid) + ".xml"
 
     def extractmetadata(self):
-        self.ieid = 123
-        self.date = 123
-        self.ipid = 123
-        self.initSuccess = False
-        pass
+        dipsarch = ET.parse(self.metadata)
+        root = dipsarch.getroot()
+        ns = "{http://dips.bundesarchiv.de/schema}"
+
+        self.parent = dipsarch.find("./" + ns + "AIP/" + ns + "Parent")
+        if self.parent is not None:
+            self.parent = self.parent.text
+        self.ipid = dipsarch.find("./" + ns + "AIP/" + ns + "AIPID").text
+        self.ieid = dipsarch.find("./" + ns + "intellectualEntity/" + ns + "IEID").text
+
+        for f in self.files:
+            ident = re.split("\.", f)
+            ident = " ".join(ident[0:-1])
+
+            # Extract filename and item ID
+            item = dipsarch.find(
+                "./" + ns + "intellectualEntity//" + ns + "linkingObjectIdentifier[" +
+                ns+"linkingObjectIdentifierValue='" + ident + "']/..")
+            self.filenames.append(item.find("./" + ns + "title").text)
+            self.itemIDs.append(item.find("./" + ns + "IID").text)
+
+            # Extract file format, file size and preservation level
+            item = dipsarch.find(
+                "./" + ns + "technical/" + ns + "object/" + ns + "objectIdentifier[" + ns + "objectIdentifierValue='"+ident+"']/..")
+            self.formats.append(item.find(".//" + ns + "formatName").text)
+            self.sizes.append(item.find(".//" + ns + "size").text)
+            self.preservationLevels.append(item.find("./" + ns + "preservationLevel").text)
+
+        # Extract AIP Date (latest event date)
+        dates = dipsarch.findall("./" + ns + "technical/" + ns + "event/" + ns + "eventDateTime")
+        datestrings = []
+        for d in dates:
+            datestrings.append(d.text)
+        datestrings = sorted(datestrings)
+        self.date = datestrings[-1]
+
+        # Extract IE/non-technical information
+        self.ieinfo.update({
+            "iename": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "title").text,
+            "iedesc": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "description").text,
+            "ieruntime":
+                dipsarch.find("./" + ns + "intellectualEntity/" + ns + "date/" + ns + "dateStart").text[0:10] +
+                " - " +
+                dipsarch.find("./" + ns + "intellectualEntity/" + ns + "date/" + ns + "dateEnd").text[0:10]
+            ,
+            "aiptype": dipsarch.find("./" + ns + "AIP/" + ns + "Type").text,
+            "ietype": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "type").text
+        })
+
+        self.initSuccess = True
 
     def getie(self):
         return self.ieid

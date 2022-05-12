@@ -1,4 +1,5 @@
 import gc
+import os.path
 import re
 import json
 import tarfile
@@ -10,8 +11,7 @@ from drh.generators import DIPGenerator, ViewDIPGenerator
 
 
 class DIPRequestHandler:
-    def __init__(self, temp, conf, confName):
-        self.temp = temp
+    def __init__(self, conf, confName):
         self.dgen = DIPGenerator()
         self.vdgen = ViewDIPGenerator()
         self.confPath = conf
@@ -20,10 +20,6 @@ class DIPRequestHandler:
         self.info = self.__load_general_info__()
         self.tempdir = tempfile.TemporaryDirectory()
         self.aips = {}
-
-        print(self.descs["profile0"])
-        print(self.info["general"])
-        print(self.conf["issuedBy"])
 
     def __load_profile_conf__(self, confName):
         with open(self.confPath+confName, "r") as confile:
@@ -58,24 +54,31 @@ class DIPRequestHandler:
         pass
 
     def parse_aip(self, paths, vze=None):
-        # https://www.askpython.com/python-modules/tarfile-module
+        # Todo: Delimiter
         delim = "/"
-        # if platform.system() == "Windows":
-        #     delim = "\\"
+        # delim = "\\"
 
-        # Todo: check if dir, then paths = all files
+        if not isinstance(paths, list):
+            if os.path.isdir(paths):
+                pathfiles = os.listdir(paths)
+                p = paths
+                paths = []
+                for f in pathfiles:
+                    paths.append(p+"\\"+f)
+            else:
+                return DrhError("FormatError", paths)
 
         ieid = None
         aips = []
+        aipids = []
         for p in paths:
 
             # Check, if file is tar.
-            if not tarfile.is_tarfile(p):
+            if not tarfile.is_tarfile(p) or os.path.isdir(p):
                 return DrhError("FormatError", p)
 
             aipid = re.split(delim, p)[-1][0:-4]
-            aip = None
-            if aipid not in aips:
+            if aipid not in self.aips and aipid not in aipids:
                 # Try to create an AIP object.
                 aip = AIP(p, self.tempdir)
 
@@ -87,6 +90,7 @@ class DIPRequestHandler:
             else:
                 aip = aips[aipid]
             aips.append(aip)
+            aipids.append(aipid)
 
             # Check, if all tars represent the same IE.
             if ieid is None:
@@ -96,15 +100,13 @@ class DIPRequestHandler:
 
             # Todo: Check, if the tars and the VZE represent the same IE.
 
-        # Todo: Check, if each parent AIP is also present
+        # Todo: Check, if each parent AIP is also present?
 
         # Set the correct index for each AIP of this IE
         aips = sorted(aips)
         for i in range(len(aips)):
             aips[i].setindex(i)
-            self.aips.update({aips[i].ipid: aips[i]})
-
-        print(self.aips)
+            self.aips.update({aipids[i]: aips[i]})
 
     def send_errormsg(self):
         pass
