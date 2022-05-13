@@ -1,22 +1,23 @@
 import os
 import re
+import sys
 from abc import ABC, abstractmethod
 import xml.etree.cElementTree as ET
 import tarfile
 
+# Todo: Delimiter
 delim = "\\"
 
 
 class AbstractIP(ABC):
 
-    def __init__(self, path, temp):
-        self.path = path
-        self.ipid = None
-        self.temp = temp
-        self.files = []
-        self.formats = []
-        self.metadata = None
-        self.ieinfo = {}
+    def __init__(self, temp):
+        self._ipid = None
+        self._temp = temp
+        self._files = []
+        self._metadata = None
+        self._itemIDs = []
+        self._initSuccess = False
 
     @abstractmethod
     def save(self, path):
@@ -26,44 +27,44 @@ class AbstractIP(ABC):
 class AIP(AbstractIP):
 
     def __init__(self, path, temp):
-        super().__init__(path, temp)
-        self.parent = None
-        self.preservationLevels = []
-        self.itemIDs = []
-        self.index = None
-        self.filenames = []
-        self.sizes = []
-        self.ieid = None
-        self.date = None
-        self.initSuccess = False
-        self.__parse__()
+        super().__init__(temp)
+        self._ieinfo = {}
+        self._formats = []
+        self._path = path
+        self._parent = None
+        self._preslevels = []
+        self._index = None
+        self._filenames = []
+        self._sizes = []
+        self._ieid = None
+        self._date = None
+        self._parse()
 
-    def __parse__(self):
-        with tarfile.open(self.path) as tar:
+    def _parse(self):
+        with tarfile.open(self._path) as tar:
             files = tar.getmembers()
             for f in files:
                 if f.name == "DIPSARCH.xml":
-                    tar.extractall(path=self.temp.name, members=[f])
-                    self.metadata = self.temp.name + delim + "DIPSARCH.xml"
+                    tar.extractall(path=self._temp.name, members=[f])
+                    self.metadata = self._temp.name + delim + "DIPSARCH.xml"
                 else:
-                    self.files.append(f.name)
+                    self._files.append(f.name)
 
-        self.extractmetadata()
-        os.rename(self.metadata, self.temp.name + delim + str(self.ipid)+".xml")
-        self.metadata = self.temp.name + delim + str(self.ipid) + ".xml"
+        self._extractmetadata()
+        os.rename(self.metadata, self._temp.name + delim + str(self.ipid) + ".xml")
+        self.metadata = self._temp.name + delim + str(self.ipid) + ".xml"
 
-    def extractmetadata(self):
+    def _extractmetadata(self):
         dipsarch = ET.parse(self.metadata)
-        root = dipsarch.getroot()
         ns = "{http://dips.bundesarchiv.de/schema}"
 
-        self.parent = dipsarch.find("./" + ns + "AIP/" + ns + "Parent")
-        if self.parent is not None:
-            self.parent = self.parent.text
+        self._parent = dipsarch.find("./" + ns + "AIP/" + ns + "Parent")
+        if self._parent is not None:
+            self._parent = self._parent.text
         self.ipid = dipsarch.find("./" + ns + "AIP/" + ns + "AIPID").text
-        self.ieid = dipsarch.find("./" + ns + "intellectualEntity/" + ns + "IEID").text
+        self._ieid = dipsarch.find("./" + ns + "intellectualEntity/" + ns + "IEID").text
 
-        for f in self.files:
+        for f in self._files:
             ident = re.split("\.", f)
             ident = " ".join(ident[0:-1])
 
@@ -71,15 +72,15 @@ class AIP(AbstractIP):
             item = dipsarch.find(
                 "./" + ns + "intellectualEntity//" + ns + "linkingObjectIdentifier[" +
                 ns+"linkingObjectIdentifierValue='" + ident + "']/..")
-            self.filenames.append(item.find("./" + ns + "title").text)
-            self.itemIDs.append(item.find("./" + ns + "IID").text)
+            self._filenames.append(item.find("./" + ns + "title").text)
+            self._itemIDs.append(item.find("./" + ns + "IID").text)
 
             # Extract file format, file size and preservation level
             item = dipsarch.find(
                 "./" + ns + "technical/" + ns + "object/" + ns + "objectIdentifier[" + ns + "objectIdentifierValue='"+ident+"']/..")
-            self.formats.append(item.find(".//" + ns + "formatName").text)
-            self.sizes.append(item.find(".//" + ns + "size").text)
-            self.preservationLevels.append(item.find("./" + ns + "preservationLevel").text)
+            self._formats.append(item.find(".//" + ns + "formatName").text)
+            self._sizes.append(item.find(".//" + ns + "size").text)
+            self._preslevels.append(item.find("./" + ns + "preservationLevel").text)
 
         # Extract AIP Date (latest event date)
         dates = dipsarch.findall("./" + ns + "technical/" + ns + "event/" + ns + "eventDateTime")
@@ -87,10 +88,10 @@ class AIP(AbstractIP):
         for d in dates:
             datestrings.append(d.text)
         datestrings = sorted(datestrings)
-        self.date = datestrings[-1]
+        self._date = datestrings[-1]
 
         # Extract IE/non-technical information
-        self.ieinfo.update({
+        self._ieinfo.update({
             "iename": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "title").text,
             "iedesc": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "description").text,
             "ieruntime":
@@ -102,64 +103,91 @@ class AIP(AbstractIP):
             "ietype": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "type").text
         })
 
-        self.initSuccess = True
-
-    def getie(self):
-        return self.ieid
-
-    def isaip(self):
-        return self.initSuccess
-    
-    def __lt__(self, other):
-        return self.date < other.date
-
-    def setindex(self, i):
-        self.index = i
+        self._initSuccess = True
 
     def save(self, path):
-        with tarfile.open(self.path, "r") as tar:
-            for fname in self.files:
-                tar.extractall(path=self.temp.name, members=[tar.getmember(fname)])
+        if os.path.exists(path + "\\" + self.ipid + ".tar"):
+            return -1
 
-        with tarfile.open(path + "\\" + self.ipid + ".tar", "x") as tar:
-            for fname in self.files:
-                tar.add(self.temp.name + "\\" + fname, arcname=fname)
-            tar.add(self.metadata, arcname="DIPSARCH.xml")
+        try:
+            with tarfile.open(self._path, "r") as tar:
+                for fname in self._files:
+                    tar.extractall(path=self._temp.name, members=[tar.getmember(fname)])
+
+            with tarfile.open(path + "\\" + self.ipid + ".tar", "x") as tar:
+                for fname in self._files:
+                    tar.add(self._temp.name + "\\" + fname, arcname=fname)
+                tar.add(self.metadata, arcname="DIPSARCH.xml")
+
+            return 1
+
+        except tarfile.TarError as e:
+            return e.__class__.__name__
+        except FileNotFoundError as e:
+            return "FileNotFoundError"
+
+    def getie(self):
+        return self._ieid
+
+    def getid(self):
+        return self._ipid
+
+    def getfilenames(self):
+        return self._filenames
+
+    def getsizes(self):
+        return self._sizes
+
+    def getformats(self):
+        return self._formats
+
+    def getpreslevels(self):
+        return self._preslevels
+
+    def getieinfo(self):
+        return self._ieinfo
+
+    def getdate(self):
+        return self._date
+
+    def getindex(self):
+        return self._index
+
+    def isaip(self):
+        return self._initSuccess
+
+    def setindex(self, i):
+        self._index = i
+
+    def __lt__(self, other):
+        return self._date < other._date
 
 
 class DIP(AbstractIP):
 
     def __init__(self, path, temp, xsd, n):
         super().__init__(path, temp)
-        self.origAIPs = None
-        self.itemIDs = None
-        self.xsd = xsd
-        self.n = n
-
-    def initialize(self):
-        pass
+        self._origAIPs = None
+        self._xsd = xsd
+        self._n = n
 
     def save(self, path):  # Todo
         with tarfile.open(self.path, "r") as tar:
-            for fname in self.files:
-                tar.extractall(path=self.temp.name, members=[tar.getmember(fname)])
+            for fname in self._files:
+                tar.extractall(path=self._temp.name, members=[tar.getmember(fname)])
 
-        with tarfile.open(path + "\\" + self.ipid + ".tar", "x") as tar:
-            for fname in self.files:
-                tar.add(self.temp.name + "\\" + fname, arcname=fname)
-            tar.add(self.metadata, arcname="DIP_Metadata.xml")
-            tar.add(self.xsd, arcname="DIP-Profile"+self.n+".xsd")
+        with tarfile.open(path + "\\" + self._ipid + ".tar", "x") as tar:
+            for fname in self._files:
+                tar.add(self._temp.name + "\\" + fname, arcname=fname)
+            tar.add(self._metadata, arcname="DIP_Metadata.xml")
+            tar.add(self._xsd, arcname="DIP-Profile" + self._n + ".xsd")
 
 
 class ViewDIP(AbstractIP):
 
     def __init__(self, path, temp):
         super().__init__(path, temp)
-        self.origAIPs = None
-        self.itemIDs = None
-
-    def initialize(self):
-        pass
+        self._origAIPs = None
 
     def save(self, path):
         pass

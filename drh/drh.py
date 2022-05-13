@@ -11,49 +11,83 @@ from drh.generators import DIPGenerator, ViewDIPGenerator
 
 
 class DIPRequestHandler:
-    def __init__(self, conf, confName):
-        self.dgen = DIPGenerator()
-        self.vdgen = ViewDIPGenerator()
-        self.confPath = conf
-        self.conf = self.__load_profile_conf__(confName)
-        self.descs = self.__load_profile_descs__()
-        self.info = self.__load_general_info__()
-        self.tempdir = tempfile.TemporaryDirectory()
-        self.aips = {}
+    def __init__(self, confdir, conf):
+        self._dgen = DIPGenerator()
+        self._vdgen = ViewDIPGenerator()
+        self._confdir = confdir
+        self._conf = self._loadconf(conf)
+        self._descs = self._loadpdescs()
+        self._info = self._loadinfo()
+        self._tempdir = tempfile.TemporaryDirectory()
+        self._aips = {}
 
-    def __load_profile_conf__(self, confName):
-        with open(self.confPath+confName, "r") as confile:
+    def _loadconf(self, conf):
+        with open(self._confdir + conf, "r") as confile:
             jsonconf = json.load(confile)
         return jsonconf
 
-    def __load_profile_descs__(self):
+    def _loadpdescs(self):
         descs = {}
-        for profile in self.conf["profileConfigs"]:
-            path = self.conf["profileConfigs"][profile]["desc"]
-            with open(self.confPath+path, "r") as desc:
+        for profile in self._conf["profileConfigs"]:
+            path = self._conf["profileConfigs"][profile]["desc"]
+            with open(self._confdir + path, "r") as desc:
                 jsondesc = json.load(desc)
                 descs.update({profile: jsondesc})
         return descs
 
-    def __load_general_info__(self):
-        path = self.conf["info"]
-        with open(self.confPath+path, "r", encoding="utf-8") as info:
+    def _loadinfo(self):
+        path = self._conf["info"]
+        with open(self._confdir + path, "r", encoding="utf-8") as info:
             jsoninfo = json.load(info)
         return jsoninfo
 
-    def start_request(self):
+    def startrequest(self):
         pass
 
-    def send_response(self):
+    def sendresponse(self):
         pass
 
-    def get_info(self, prop):
-        return self.info[prop]
+    def getinfo(self, prop):
+        return self._info[prop]
 
-    def get_aipinfo(self, paths, vze=None):
-        pass
+    def getaipinfo(self, paths, vze=None):
+        aips = self._parseaip(paths, vze)
+        aipinfo = []
+        for a in aips:
+            aip = {
+                "n": str(a.getindex()),
+                "date": a.getdate()[0:10],
+                "formats": set(a.getformats())
+            }
 
-    def parse_aip(self, paths, vze=None):
+            files = []
+            formats = a.getformats()
+            sizes = a.getsizes()
+            filenames = a.getfilenames()
+            preslevs = a.getpreslevels()
+
+            for i in range(len(filenames)):
+                files.append({
+                    "name": filenames[i],
+                    "format": formats[i],
+                    "size": sizes[i],
+                    "preslev": preslevs[i]
+                })
+
+            aip.update({"files": files})
+            aipinfo.append(aip)
+
+        if vze is None:
+            vzeinfo = a.getieinfo()
+        else:
+            pass
+
+        return {
+            "aipinfo": aipinfo,
+            "vzeinfo": vzeinfo
+        }
+
+    def _parseaip(self, paths, vze=None):
         # Todo: Delimiter
         delim = "/"
         # delim = "\\"
@@ -73,22 +107,28 @@ class DIPRequestHandler:
         aipids = []
         for p in paths:
 
+            # Check, if file exists
+            if not os.path.exists(p):
+                return DrhError("FormatError", p)
+
             # Check, if file is tar.
             if not tarfile.is_tarfile(p) or os.path.isdir(p):
                 return DrhError("FormatError", p)
 
             aipid = re.split(delim, p)[-1][0:-4]
-            if aipid not in self.aips and aipid not in aipids:
+            if aipid not in self._aips and aipid not in aipids:
                 # Try to create an AIP object.
-                aip = AIP(p, self.tempdir)
+                aip = AIP(p, self._tempdir)
 
                 # Check, if tar is AIP.
                 if not aip.isaip():
                     del aip
                     gc.collect()
                     return DrhError("AIPError", p)
+
+                self._aips.update({aipid: aip})
             else:
-                aip = aips[aipid]
+                aip = self._aips[aipid]
             aips.append(aip)
             aipids.append(aipid)
 
@@ -106,13 +146,12 @@ class DIPRequestHandler:
         aips = sorted(aips)
         for i in range(len(aips)):
             aips[i].setindex(i)
-            self.aips.update({aipids[i]: aips[i]})
+            self._aips.update({aipids[i]: aips[i]})
 
-    def send_errormsg(self):
-        pass
+        return aips
 
     def prepare_exit(self):
-        self.tempdir.cleanup()
+        self._tempdir.cleanup()
 
 
 class DrhError:
