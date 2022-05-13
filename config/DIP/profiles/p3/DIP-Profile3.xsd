@@ -1,0 +1,73 @@
+<!-- Placeholder XSD -->
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://dips.bundesarchiv.de/schema" xmlns:dips="http://dips.bundesarchiv.de/schema" targetNamespace="http://dips.bundesarchiv.de/schema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="0.1">
+	<xs:element name="dips_dip" type="t_dips_dip"/>
+	<xs:complexType name="t_dips_dip" abstract="false">
+		<xs:annotation>
+			<xs:documentation>DiPSDIP beschreibt ein DIP</xs:documentation>
+		</xs:annotation>
+        <xs:sequence>
+			<xs:element name="DIP">
+				<xs:annotation>
+					<xs:documentation>Metadaten fuer die Bechreibung des Dissemination Information Package </xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="DIPID" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Eindeutiger Bezeichner fuer das gesamte DIP</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="type" minOccurs="1" maxOccurs="1">
+							<xs:annotation>
+								<xs:documentation>Art des DIP (universal oder anwendungsspezifisch)</xs:documentation>
+							</xs:annotation>					
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="UNIVERSAL"/>
+									<xs:enumeration value="APPLICATIONSPECIFIC"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="profileNumber" type="xs:int">
+							<xs:annotation>
+								<xs:documentation>Nummer des verwendeten DIP-Profils</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="profileDescription" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Natuerlichsprachliche Beschreibung/Benennung des verwendeten DIP-Profils (z.B. "Profil 1: Standard")</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="profileVersion" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Versionsnummer des verwendeten DIP-Profils</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="issuedBy" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Ausgebende Stelle, die fuer die Generierung des DIP verantwortlich zeichnet (i.d.R. das Archiv,
+								das den Algorithmus zur Generierung des DIPs verwaltet und das DIP bereitstellt.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="generatorName" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Bezeichnung fuer das System/den Algorithmus, der das DIP erzeugt hat (z.B. Produktname)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="generatorVersion" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Versionsnummer des verwendeten Algorithmus zur Generierung des DIPs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="generationDate" type="xs:dateTime">
+							<xs:annotation>
+								<xs:documentation>Datum der Erstellung des DIPs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+    <xs:complexType>
+</xs:schema>

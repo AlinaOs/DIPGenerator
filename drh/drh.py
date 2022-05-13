@@ -123,8 +123,13 @@ class DrhError:
 
     def assigndesc(self):
         if self.etype == "FormatError":
-            return "At least one of the submitted files is not a TAR file."
-        return ""
+            return "The given path doesn't lead to a directory or at least one of the submitted paths / files in the"\
+                   "given directory is a directory or not a TAR file!"
+        if self.etype == "AIPError":
+            return "At least one of the submitted files couldn't be read because it isn't a valid AIP!"
+        if self.etype == "IEError":
+            return "The submitted AIPs and VZE Info don't represent the same Intellectual Entity. At least one of the"\
+                   "submitted files represents a different Entity than the others"
 
     def gettype(self):
         return self.etype

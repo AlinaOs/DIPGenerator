@@ -1,4 +1,3 @@
-import gc
 import os
 import re
 from abc import ABC, abstractmethod
@@ -6,6 +5,7 @@ import xml.etree.cElementTree as ET
 import tarfile
 
 delim = "\\"
+
 
 class AbstractIP(ABC):
 
@@ -18,10 +18,8 @@ class AbstractIP(ABC):
         self.metadata = None
         self.ieinfo = {}
 
+    @abstractmethod
     def save(self, path):
-        pass
-
-    def delete(self):
         pass
 
 
@@ -118,16 +116,39 @@ class AIP(AbstractIP):
     def setindex(self, i):
         self.index = i
 
+    def save(self, path):
+        with tarfile.open(self.path, "r") as tar:
+            for fname in self.files:
+                tar.extractall(path=self.temp.name, members=[tar.getmember(fname)])
+
+        with tarfile.open(path + "\\" + self.ipid + ".tar", "x") as tar:
+            for fname in self.files:
+                tar.add(self.temp.name + "\\" + fname, arcname=fname)
+            tar.add(self.metadata, arcname="DIPSARCH.xml")
+
 
 class DIP(AbstractIP):
 
-    def __init__(self, path, temp):
+    def __init__(self, path, temp, xsd, n):
         super().__init__(path, temp)
         self.origAIPs = None
         self.itemIDs = None
+        self.xsd = xsd
+        self.n = n
 
     def initialize(self):
         pass
+
+    def save(self, path):  # Todo
+        with tarfile.open(self.path, "r") as tar:
+            for fname in self.files:
+                tar.extractall(path=self.temp.name, members=[tar.getmember(fname)])
+
+        with tarfile.open(path + "\\" + self.ipid + ".tar", "x") as tar:
+            for fname in self.files:
+                tar.add(self.temp.name + "\\" + fname, arcname=fname)
+            tar.add(self.metadata, arcname="DIP_Metadata.xml")
+            tar.add(self.xsd, arcname="DIP-Profile"+self.n+".xsd")
 
 
 class ViewDIP(AbstractIP):
@@ -138,4 +159,7 @@ class ViewDIP(AbstractIP):
         self.itemIDs = None
 
     def initialize(self):
+        pass
+
+    def save(self, path):
         pass
