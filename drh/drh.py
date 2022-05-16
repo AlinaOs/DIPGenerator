@@ -4,23 +4,21 @@ import re
 import json
 import tarfile
 import tempfile
-import platform
-from data.conf import DIPRequest
-from data.ip import AIP, DIP, ViewDIP
-from drh.generators import DIPGenerator, ViewDIPGenerator
+from drh.ip import AIP, DIP, ViewDIP
+
+# Todo: Delimiter
+delim = "/"
 
 
 class DIPRequestHandler:
     def __init__(self, confdir, conf, vconfdir, vconf):
-        self._dgen = DIPGenerator()
-        self._vdgen = ViewDIPGenerator()
         self._confdir = confdir
         self._conf = self._loadconf(confdir, conf)
+        self.vconf = self._loadconf(vconfdir, vconf)
         self._descs = self._loadpdescs()
         self._info = self._loadinfo()
         self._tempdir = tempfile.TemporaryDirectory()
         self._aips = {}
-        self.vconf = self._loadconf(vconfdir, vconf)
 
     def _loadconf(self, dir_, conf):
         with open(dir_ + conf, "r") as confile:
@@ -112,9 +110,6 @@ class DIPRequestHandler:
         }
 
     def _parseaip(self, paths, vze=None):
-        # Todo: Delimiter
-        delim = "/"
-        # delim = "\\"
 
         if not isinstance(paths, list):
             if os.path.isdir(paths):
