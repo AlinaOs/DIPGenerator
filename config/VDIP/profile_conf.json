@@ -20,7 +20,7 @@
             "profileMetadata":{
                 "profileNumber": 0,
                 "profileDescription": "Roh-AIP",
-                "profileVersion": "dev"
+                "profileVersion": "development"
             }
         },
         "profile1": {
@@ -36,7 +36,7 @@
                 {
                     "profileNumber": 1,
                     "profileDescription": "Standard",
-                    "profileVersion": "dev"
+                    "profileVersion": "development"
                 }
         },
         "profile2": {
@@ -51,7 +51,7 @@
             "profileMetadata": {
                 "profileNumber": 2,
                 "profileDescription": "Wissenschaftlich",
-                "profileVersion": "dev"
+                "profileVersion": "development"
             }
         },
         "profile3": {
@@ -66,7 +66,7 @@
             "profileMetadata": {
                 "profileNumber": 3,
                 "profileDescription": "Technisch",
-                "profileVersion": "dev"
+                "profileVersion": "development"
             }
         }
     }

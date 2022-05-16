@@ -1,9 +1,11 @@
 from drh.drh import DIPRequestHandler
 
-confPath = "config/DIP/"
-confName = "profile_conf.json"
+confdir = "config/DIP/"
+conf = "profile_conf.json"
+vconfdir = "config/VDIP/"
+vconf = "profile_conf.json"
 
-drh = DIPRequestHandler(confPath, confName)
+drh = DIPRequestHandler(confdir, conf, vconfdir, vconf)
 
 # Todo: absolute paths
 # aips = [
@@ -17,9 +19,20 @@ aips = [
 ]
 # aips = "Tarfiles"
 
-info = drh.getaipinfo(aips)
+# info = drh.getaipinfo(aips)
+#
+# print("AIP-Info:")
+# print(info["aipinfo"])
+# print("VZE-Info:")
+# print(info["vzeinfo"])
 
-print("AIP-Info:")
-print(info["aipinfo"])
-print("VZE-Info:")
-print(info["vzeinfo"])
+uc = {
+    "aipPaths": aips,
+    "vzePath": None,
+    "profileNo": 2,
+    "deliveryType": "both",
+    "outputPath": "testoutput",
+    "chosenAips": ["ab7e4f2b-edd2-45d9-8fdc-49d0431bfb1b", "d3638f0c-82a7-2a3b-afcd-a10c4057e845"]
+}
+
+req = drh.startrequest(uc)

@@ -6,23 +6,24 @@ import tarfile
 import tempfile
 import platform
 from data.conf import DIPRequest
-from data.ip import AIP
+from data.ip import AIP, DIP, ViewDIP
 from drh.generators import DIPGenerator, ViewDIPGenerator
 
 
 class DIPRequestHandler:
-    def __init__(self, confdir, conf):
+    def __init__(self, confdir, conf, vconfdir, vconf):
         self._dgen = DIPGenerator()
         self._vdgen = ViewDIPGenerator()
         self._confdir = confdir
-        self._conf = self._loadconf(conf)
+        self._conf = self._loadconf(confdir, conf)
         self._descs = self._loadpdescs()
         self._info = self._loadinfo()
         self._tempdir = tempfile.TemporaryDirectory()
         self._aips = {}
+        self.vconf = self._loadconf(vconfdir, vconf)
 
-    def _loadconf(self, conf):
-        with open(self._confdir + conf, "r") as confile:
+    def _loadconf(self, dir_, conf):
+        with open(dir_ + conf, "r") as confile:
             jsonconf = json.load(confile)
         return jsonconf
 
@@ -41,8 +42,31 @@ class DIPRequestHandler:
             jsoninfo = json.load(info)
         return jsoninfo
 
-    def startrequest(self):
-        pass
+    def startrequest(self, uchoices):
+        suc = self._parseaip(uchoices["aipPaths"])
+        if isinstance(suc, DrhError):
+            return suc
+
+        pconf = self._conf["profileConfigs"]["profile"+str(uchoices["profileNo"])]
+        pconf.update({"xsl": self._confdir + pconf["xsl"]})
+        pconf.update({"xsd": self._confdir + pconf["xsd"]})
+        print(pconf)
+        req = {
+            "aips": [self._aips[x] for x in uchoices["chosenAips"]],
+            "pconf": pconf,
+            "vzePath": uchoices["vzePath"],
+            "isil": self._conf["issuedBy"]
+        }
+
+        # Create DIP and, if user chose download as delivery type, save it
+        dip = DIP(req, self._tempdir)
+        if uchoices["deliveryType"] != "viewer":
+            dip.save(uchoices["outputPath"])
+
+        # If user chose Viewer as delivery type, create ViewDIP
+        if uchoices["deliveryType"] != "download":
+            vdip = ViewDIP(dip, self.vconf, self._tempdir)
+            vdip.save(uchoices["outputPath"])
 
     def sendresponse(self):
         pass
