@@ -45,26 +45,39 @@ class DIPRequestHandler:
         if isinstance(suc, DrhError):
             return suc
 
+        aips = [self._aips[x] for x in uchoices["chosenAips"]]
+        if uchoices["profileNo"] == 0:
+            path = uchoices["outputPath"]+"/"+aips[0].getieid()
+            os.mkdir(path)
+            for a in aips:
+                a.save(path)
+                a.saveXSD(path,
+                          self._confdir + self._conf["profileConfigs"]["profile0"]["xsd"])
+            return
+
         pconf = self._conf["profileConfigs"]["profile"+str(uchoices["profileNo"])]
         pconf.update({"xsl": self._confdir + pconf["xsl"]})
         pconf.update({"xsd": self._confdir + pconf["xsd"]})
+        pconf.update({"generatorName": self._conf["generatorName"]})
+        pconf.update({"generatorVersion": self._conf["generatorVersion"]})
+        pconf.update({"issuedBy": self._conf["issuedBy"]})
         print(pconf)
         req = {
-            "aips": [self._aips[x] for x in uchoices["chosenAips"]],
+            "aips": aips,
             "pconf": pconf,
-            "vzePath": uchoices["vzePath"],
-            "isil": self._conf["issuedBy"]
+            "vzePath": uchoices["vzePath"]
         }
 
         # Create DIP and, if user chose download as delivery type, save it
         dip = DIP(req, self._tempdir)
         if uchoices["deliveryType"] != "viewer":
+            pass
             dip.save(uchoices["outputPath"])
 
         # If user chose Viewer as delivery type, create ViewDIP
         if uchoices["deliveryType"] != "download":
             vdip = ViewDIP(dip, self.vconf, self._tempdir)
-            vdip.save(uchoices["outputPath"])
+            # vdip.save(uchoices["outputPath"])
 
     def sendresponse(self):
         pass
@@ -104,6 +117,7 @@ class DIPRequestHandler:
         else:
             pass
 
+        # Todo: Success Message
         return {
             "aipinfo": aipinfo,
             "vzeinfo": vzeinfo

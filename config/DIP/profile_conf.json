@@ -10,9 +10,8 @@
     "profileConfigs": {
         "profile0": {
             "DIPGeneration": false,
-            "xsl": "profiles/p0/0_xsl.xsl",
             "desc": "profiles/p0/p0_desc_de.json",
-            "xsd": "profiles/p0/DIP-Profile-0.xsd",
+            "xsd": "profiles/p0/DIP-P0.xsd",
             "AIPChoice": true,
             "defaultAIP": "latest",
             "deliveryChoice": false,
@@ -25,9 +24,9 @@
         },
         "profile1": {
             "DIPGeneration": true,
-            "xsl": "profiles/p1/1_xsl.xsl",
+            "xsl": "profiles/p1/p1_xsl.xsl",
             "desc": "profiles/p1/p1_desc_de.json",
-            "xsd": "profiles/p1/DIP-Profile-1.xsd",
+            "xsd": "profiles/p1/DIP-P1.xsd",
             "AIPChoice": false,
             "defaultAIP": "latest",
             "deliveryChoice": true,
@@ -41,9 +40,9 @@
         },
         "profile2": {
             "DIPGeneration": true,
-            "xsl": "profiles/p2/2_xsl.xsl",
+            "xsl": "profiles/p2/p2_xsl.xsl",
             "desc": "profiles/p2/p2_desc_de.json",
-            "xsd": "profiles/p2/DIP-Profile-2.xsd",
+            "xsd": "profiles/p2/DIP-P2.xsd",
             "AIPChoice": true,
             "defaultAIP": "frame",
             "deliveryChoice": true,
@@ -56,9 +55,9 @@
         },
         "profile3": {
             "DIPGeneration": true,
-            "xsl": "profiles/p3/3_xsl.xsl",
+            "xsl": "profiles/p3/p3_xsl.xsl",
             "desc": "profiles/p3/p3_desc_de.json",
-            "xsd": "profiles/p3/DIP-Profile-0.xsd",
+            "xsd": "profiles/p3/DIP-P3.xsd",
             "AIPChoice": true,
             "defaultAIP": "all",
             "deliveryChoice": true,

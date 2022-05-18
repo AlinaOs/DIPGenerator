@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xmlns:array="http://www.w3.org/2005/xpath-functions/array"
                 xmlns:map="http://www.w3.org/2005/xpath-functions/map"
                 xmlns:math="http://www.w3.org/2005/xpath-functions/math"
@@ -45,7 +44,7 @@
 
     <xsl:template match="/*" mode="#all">
         <dips_dip>
-            <xsl:attribute name="xsi:noNamespaceSchemaLocation" select="map:get($json, 'schema')"/>
+            <xsl:attribute name="dips:schemaLocation" select="map:get($json, 'schema')"/>
             <DIP>
                 <DIPID>
                     <xsl:value-of select="map:get($json, 'id')"/>
@@ -87,7 +86,7 @@
                     <xsl:copy-of select="$ie/dips:extDescriptiveMetadataItem/@*|
                         $ie/dips:extDescriptiveMetadataItem/node()[not(self::dips:significantProperty)
                             and not(self::dips:linkingObjectIdentifier)]"/>
-                        <xsl:copy-of select="gen:objects-by-iid(dips:IID)"/>
+                        <xsl:copy-of select="gen:objects-by-iid($ie/dips:extDescriptiveMetadataItem/dips:IID)"/>
                 </extDescriptiveMetadataItem>
                 <xsl:for-each select="$ie/dips:item">
                     <item>

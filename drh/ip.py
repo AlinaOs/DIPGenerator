@@ -1,10 +1,13 @@
+import json
+import tempfile
 from datetime import datetime
 import os
+import shutil
 import re
 from abc import ABC, abstractmethod
 import xml.etree.cElementTree as ET
 import tarfile
-from saxonpy import *
+from saxonpy import PySaxonProcessor
 
 # Todo: Delimiter
 delim = "\\"
@@ -120,7 +123,7 @@ class AIP(AbstractIP):
 
         self._initSuccess = True
 
-    def save(self, path):
+    def save(self, path): # Todo: ErrorHandling and SuccessHandling for DIP and ViewDIP
         if os.path.exists(path + "\\" + self.ipid + ".tar"):
             return -1
 
@@ -140,6 +143,9 @@ class AIP(AbstractIP):
             return e.__class__.__name__
         except FileNotFoundError as e:
             return "FileNotFoundError"
+
+    def saveXSD(self, path, xsd):
+        shutil.copy2(xsd, path)
 
     def getie(self):
         return self._ieid
@@ -187,14 +193,16 @@ class DIP(AbstractIP):
         super().__init__(temp)
 
         self._conf = req["pconf"]
-        self._ipid = req["isil"] \
+        self._date = datetime.now().strftime("%Y-%m-%d.%Hh-%Mm-%Ss")
+        self._ipid = self._conf["issuedBy"] \
                      + ".p" + str(self._conf["profileMetadata"]["profileNumber"]) \
                      + "-v" + self._conf["profileMetadata"]["profileVersion"] \
                      + "." + req["aips"][0].getieid() \
-                     + "." + datetime.now().strftime("%Y-%m-%d.%Hh-%Mm-%Ss")
+                     + "." + self._date
         self._origAIPs = []
+        self._aips = req["aips"]
 
-        self._filterfiles(req["aips"])
+        self._filterfiles(self._aips)
         self._transformmetadata()
         self._initSuccess = True
 
@@ -206,8 +214,54 @@ class DIP(AbstractIP):
                     self._files.append(afiles[i])
                     self._origAIPs.append(a)
 
-    def _transformmetadata(self):  # Todo: Implement transformation with saxon and error handling
-        self._metadata = self._origAIPs[0].getmetadata()
+    def _transformmetadata(self):  # Todo: Error handling
+        # Create new tempfolder and copy xsl to it, create dummy xml
+        temp = tempfile.TemporaryDirectory()
+        shutil.copy2(self._conf["xsl"], temp.name + "/xsl.xsl")
+        with open(temp.name + "/dummy.xml", "w") as f:
+            f.write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><dummy></dummy>')
+            pass
+
+        # Create config json in folder
+        vars_ = {
+            "id": self._ipid,
+            "profileNumber": self.getpno(),
+            "profileDescription": self._conf["profileMetadata"]["profileDescription"],
+            "profileVersion": self._conf["profileMetadata"]["profileVersion"],
+            "issuedBy": self._conf["issuedBy"],
+            "generatorName": self._conf["generatorName"],
+            "generatorVersion": self._conf["generatorVersion"],
+            "generationDate": self._date,
+            "type": "UNIVERSAL",
+            "schema": "DIP-P"+str(self.getpno())+".xsd"
+        }
+        with open(temp.name + "/vars.json", "w") as jf:
+            json.dump(vars_, jf)
+
+        # Copy aip metadata to shared folder (while renaming according to index)
+        aipdir = temp.name + "/aips/"
+        os.mkdir(aipdir)
+        for a in self._aips:
+            aipname = ""
+            for j in range(0, 4-len(str(a.getindex()))):
+                aipname += "0"
+            aipname += str(a.getindex())
+            shutil.copy2(a.getmetadata(), aipdir + aipname + ".xml")
+
+        self._metadata = self._temp.name + "\\" + self._ipid + ".xml"
+
+        # Start transformation
+        with PySaxonProcessor(license=False) as proc:
+            proc.set_cwd(os.getcwd())
+            xsltproc = proc.new_xslt30_processor()
+            xsltproc.transform_to_file(
+                source_file=temp.name + "/dummy.xml",
+                output_file=self._metadata,
+                stylesheet_file=temp.name + "/xsl.xsl")
+            print(xsltproc.get_error_message(0))
+
+        # Delete tempdir
+        # temp.cleanup()
 
     def save(self, path):
         for i in range(0, len(self._files)):
@@ -217,8 +271,8 @@ class DIP(AbstractIP):
         with tarfile.open(path + "\\" + "DIP." + self._ipid + ".tar", "x") as tar:
             for fname in self._files:
                 tar.add(self._temp.name + "\\" + fname, arcname=fname)
-            tar.add(self._metadata, arcname="DIP_Metadata.xml")
-            tar.add(self.getxsd(), arcname="DIP-Profile" + str(self.getpno()) + ".xsd")
+            tar.add(self._metadata, arcname="DIP-Metadata.xml")
+            tar.add(self.getxsd(), arcname="DIP-P" + str(self.getpno()) + ".xsd")
 
     def getmetadata(self):
         return self._metadata
