@@ -25,6 +25,7 @@ aips = [
 # aips = "Tarfiles"
 
 # info = drh.getaipinfo(aips)
+# info.printresponse()
 #
 # print("AIP-Info:")
 # print(info["aipinfo"])
@@ -32,14 +33,17 @@ aips = [
 # print(info["vzeinfo"])
 
 uc = {
-    "aipPaths": aips,
     "vzePath": None,
-    "profileNo": 0,
+    "profileNo": 3,
     "deliveryType": "both",
     "outputPath": "testoutput",
-    "chosenAips": ["d3638f0c-82a7-2a3b-afcd-a10c4057e845", "ab7e4f2b-edd2-45d9-8fdc-49d0431bfb1b"]
+    "chosenAips": [
+        "Tarfiles/ab7e4f2b-edd2-45d9-8fdc-49d0431bfb1b.tar",
+        "Tarfiles/d3638f0c-82a7-2a3b-afcd-a10c4057e845.tar"
+    ]
 }
 
 req = drh.startrequest(uc)
+req.printresponse()
 
 # rv = RequestViewer()

@@ -1,13 +1,13 @@
-import gc
 import os.path
-import re
+import gc
 import json
 import tarfile
 import tempfile
-from drh.ip import AIP, DIP, ViewDIP
+import traceback
+from abc import ABC, abstractmethod
 
-# Todo: Delimiter
-delim = "/"
+from drh.err import *
+from drh.ip import AIP, DIP, ViewDIP
 
 
 class DIPRequestHandler:
@@ -21,7 +21,7 @@ class DIPRequestHandler:
         self._aips = {}
 
     def _loadconf(self, dir_, conf):
-        with open(dir_ + conf, "r") as confile:
+        with open(os.path.join(dir_ + conf), "r") as confile:
             jsonconf = json.load(confile)
         return jsonconf
 
@@ -29,35 +29,47 @@ class DIPRequestHandler:
         descs = {}
         for profile in self._conf["profileConfigs"]:
             path = self._conf["profileConfigs"][profile]["desc"]
-            with open(self._confdir + path, "r") as desc:
+            with open(os.path.join(self._confdir + path), "r") as desc:
                 jsondesc = json.load(desc)
                 descs.update({profile: jsondesc})
         return descs
 
     def _loadinfo(self):
         path = self._conf["info"]
-        with open(self._confdir + path, "r", encoding="utf-8") as info:
+        with open(os.path.join(self._confdir + path), "r", encoding="utf-8") as info:
             jsoninfo = json.load(info)
         return jsoninfo
 
     def startrequest(self, uchoices):
-        suc = self._parseaip(uchoices["aipPaths"])
-        if isinstance(suc, DrhError):
-            return suc
+        resp = DrhResponse()
+        aips, errors = self._parseaip(uchoices["chosenAips"], mode="req")
+        if len(errors) > 0:
+            resp.newerror(errors)
+            return resp
+        resp.newsuccess(ip="AIP", type_="parse", detail="Request AIPs")
 
-        aips = [self._aips[x] for x in uchoices["chosenAips"]]
         if uchoices["profileNo"] == 0:
-            path = uchoices["outputPath"]+"/"+aips[0].getieid()
+            path = os.path.join(uchoices["outputPath"], aips[0].getieid())
+            if os.path.exists(path):
+                resp.newerror(PathExistsError(path))
+                return resp
             os.mkdir(path)
+            xsdpath = os.path.join(self._confdir, self._conf["profileConfigs"]["profile0"]["xsd"])
             for a in aips:
-                a.save(path)
-                a.saveXSD(path,
-                          self._confdir + self._conf["profileConfigs"]["profile0"]["xsd"])
-            return
+                errs = a.save(path)
+                if errs:
+                    resp.newerror(SavingError("AIP", errs))
+                    return resp
+                errs = a.savexsd(path, xsdpath)
+                if errs:
+                    resp.newerror(SavingError("AIP", errs))
+                    return resp
+            resp.newsuccess(detail=path, ip="AIP", type_="save")
+            return resp
 
-        pconf = self._conf["profileConfigs"]["profile"+str(uchoices["profileNo"])]
-        pconf.update({"xsl": self._confdir + pconf["xsl"]})
-        pconf.update({"xsd": self._confdir + pconf["xsd"]})
+        pconf = self._conf["profileConfigs"]["profile" + str(uchoices["profileNo"])]
+        pconf.update({"xsl": os.path.join(self._confdir + pconf["xsl"])})
+        pconf.update({"xsd": os.path.join(self._confdir + pconf["xsd"])})
         pconf.update({"generatorName": self._conf["generatorName"]})
         pconf.update({"generatorVersion": self._conf["generatorVersion"]})
         pconf.update({"issuedBy": self._conf["issuedBy"]})
@@ -70,23 +82,42 @@ class DIPRequestHandler:
 
         # Create DIP and, if user chose download as delivery type, save it
         dip = DIP(req, self._tempdir)
+        if not dip.initsuccess():
+            resp.newerror(ParsingError(dip.getid(), dip.gettb()))
+            return resp
+        resp.newsuccess(ip="DIP", type_="parse", detail=dip.getid())
         if uchoices["deliveryType"] != "viewer":
-            pass
-            dip.save(uchoices["outputPath"])
+            errs = dip.save(uchoices["outputPath"])
+            if errs:
+                resp.newerror(SavingError(dip.getid(), errs))
+                return resp
+            resp.newsuccess(detail=os.path.join(uchoices["outputPath"], dip.getid()), ip="DIP", type_="save")
 
         # If user chose Viewer as delivery type, create ViewDIP
         if uchoices["deliveryType"] != "download":
             vdip = ViewDIP(dip, self.vconf, self._tempdir)
-            # vdip.save(uchoices["outputPath"])
+            if not vdip.initsuccess():
+                resp.newerror(ParsingError(vdip.getid(), vdip.gettb()))
+                return resp
+            resp.newsuccess(ip="VDIP", type_="parse", detail=vdip.getid())
+            errs = vdip.save(uchoices["outputPath"])
+            if errs:
+                resp.newerror(SavingError(vdip.getid(), errs))
+                return resp
+            resp.newsuccess(detail=os.path.join(uchoices["outputPath"], vdip.getid()), ip="VDIP", type_="save")
+            return resp
 
-    def sendresponse(self):
-        pass
 
     def getinfo(self, prop):
         return self._info[prop]
 
     def getaipinfo(self, paths, vze=None):
-        aips = self._parseaip(paths, vze)
+        resp = InfoResponse()
+        aips, errors = self._parseaip(paths, vze=vze)
+        resp.newerror(errors)
+        if any(e.isfatal for e in errors):
+            return resp
+
         aipinfo = []
         for a in aips:
             aip = {
@@ -115,15 +146,19 @@ class DIPRequestHandler:
         if vze is None:
             vzeinfo = a.getieinfo()
         else:
-            pass
+            pass  # Todo VZE
 
-        # Todo: Success Message
-        return {
+        resp.setinfo({
             "aipinfo": aipinfo,
             "vzeinfo": vzeinfo
-        }
+        })
+        return resp
 
-    def _parseaip(self, paths, vze=None):
+    def _parseaip(self, paths, vze=None, mode="info"):
+        errors = []
+        ieid = None
+        aips = []
+        aipids = []
 
         if not isinstance(paths, list):
             if os.path.isdir(paths):
@@ -131,33 +166,35 @@ class DIPRequestHandler:
                 p = paths
                 paths = []
                 for f in pathfiles:
-                    paths.append(p+"\\"+f)
+                    paths.append(os.path.join(p, f))
             else:
-                return DrhError("FormatError", paths)
+                errors.append(PathError(paths, fatal=True))
+                return aips, errors
 
-        ieid = None
-        aips = []
-        aipids = []
         for p in paths:
 
             # Check, if file exists
             if not os.path.exists(p):
-                return DrhError("FormatError", p)
+                errors.append(PathError(p))
+                continue
 
             # Check, if file is tar.
             if not tarfile.is_tarfile(p) or os.path.isdir(p):
-                return DrhError("FormatError", p)
+                errors.append(FormatError(p))
+                continue
 
-            aipid = re.split(delim, p)[-1][0:-4]
+            aipid = os.path.basename(p)
+            aipid = aipid[0:-4]
             if aipid not in self._aips and aipid not in aipids:
                 # Try to create an AIP object.
                 aip = AIP(p, self._tempdir)
 
                 # Check, if tar is AIP.
-                if not aip.isaip():
+                if not aip.initsuccess():
+                    errors.append(ParsingError(p, aip.gettb()))
                     del aip
                     gc.collect()
-                    return DrhError("AIPError", p)
+                    continue
 
                 self._aips.update({aipid: aip})
             else:
@@ -168,12 +205,21 @@ class DIPRequestHandler:
             # Check, if all tars represent the same IE.
             if ieid is None:
                 ieid = aip.getie()
-            elif not ieid == aip.getie():
-                return DrhError("IEError", "AIP-ID: "+aip.getid()+", IE-ID: "+aip.getie())
+            if not ieid == aip.getie():
+                errors.append(IEError("AIP-ID: " + aip.getid() + ", IE-ID: " + aip.getie(), fatal=True))
+                continue
+            if vze is not None:
+                # Todo: Check, if the tars and the VZE represent the same IE.
+                return IEError("AIP-IE: " + aip.getid() + ", VZE-IE: " + "Todo", fatal=True)
 
-            # Todo: Check, if the tars and the VZE represent the same IE.
-
-        # Todo: Check, if each parent AIP is also present?
+        # Check, if each parent AIP is present
+        if mode == "info":
+            missingparents = 0
+            for i in range(len(aips)):
+                if aips[i].getparent() and aips[i].getparent() not in aipids:
+                    missingparents += 1
+            if missingparents > 0:
+                errors.append(IEUncompleteError("Missing Parents: " + str(missingparents)))
 
         # Set the correct index for each AIP of this IE
         aips = sorted(aips)
@@ -181,35 +227,67 @@ class DIPRequestHandler:
             aips[i].setindex(i)
             self._aips.update({aipids[i]: aips[i]})
 
-        return aips
+        return aips, errors
 
     def prepare_exit(self):
         self._tempdir.cleanup()
 
 
-class DrhError:
-    def __init__(self, etype, detail):
-        self.etype = etype
-        self.desc = self.assigndesc()
-        self.detail = detail
+class AbstractDrhResponse(ABC):
 
-    def assigndesc(self):
-        if self.etype == "FormatError":
-            return "The given path doesn't lead to a directory or at least one of the submitted paths / files in the"\
-                   "given directory is a directory or not a TAR file!"
-        if self.etype == "AIPError":
-            return "At least one of the submitted files couldn't be read because it isn't a valid AIP!"
-        if self.etype == "IEError":
-            return "The submitted AIPs and VZE Info don't represent the same Intellectual Entity. At least one of the"\
-                   "submitted files represents a different Entity than the others"
+    def __init__(self):
+        self._responses = []
+        self._errors = []
+        self._success = None
 
-    def gettype(self):
-        return self.etype
+    def newerror(self, errors):
+        if not isinstance(errors, list):
+            errors = [errors]
+        for e in errors:
+            self._errors.append({
+                "type": e.__class__.__name__,
+                "message": e.getdesc(),
+                "detail": e.getdetail()
+            })
 
-    def getdesc(self):
-        return self.desc
+    def getfullresponse(self):
+        return {
+            "success": self._success,
+            "errors": self._errors
+        }
 
-    def getdetail(self):
-        return self.detail
+    def printresponse(self):
+        print("Success:")
+        print(self._success)
+        print("Errors:")
+        print(self._errors)
 
 
+class InfoResponse(AbstractDrhResponse):
+    def __init__(self):
+        super().__init__()
+        self._responses = []
+        self._errors = []
+
+    def setinfo(self, infodict):
+        self._success = infodict
+
+    def getinfo(self):
+        return self._success
+
+
+class DrhResponse(AbstractDrhResponse):
+    def __init__(self):
+        super().__init__()
+        self._responses = []
+        self._errors = []
+        self._success = []
+
+    def newsuccess(self, ip, type_, detail=None):
+        suc = {
+            "IP": ip,
+            "type": type_
+        }
+        if detail:
+            suc.update({"detail": detail})
+        self._success.append(suc)
