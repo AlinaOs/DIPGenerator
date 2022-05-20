@@ -1,6 +1,6 @@
 {
-    "IEInfoExtraction": "PH.xsl",
     "VZInfoExtraction": "PH.xsl",
+    "AIPschema": "DiPSArchiv.xsd",
     "type": "UNIVERSAL",
     "issuedBy": "DE-2143",
     "generatorName": "DiPS DIP-Generierungsmodul",

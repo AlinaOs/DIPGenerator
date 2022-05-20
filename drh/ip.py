@@ -7,6 +7,9 @@ import traceback
 from datetime import datetime
 from abc import ABC, abstractmethod
 import xml.etree.cElementTree as ET
+from lxml import etree
+
+import saxonpy
 from saxonpy import PySaxonProcessor
 
 
@@ -42,10 +45,11 @@ class AbstractIP(ABC):
 
 class AIP(AbstractIP):
 
-    def __init__(self, path, temp):
+    def __init__(self, path, xsd, temp):
         super().__init__(temp)
 
         self._path = path
+        self._xsd = xsd
         self._index = None
         self._parent = None
         self._date = None
@@ -62,7 +66,6 @@ class AIP(AbstractIP):
         self._parse()
 
     def _parse(self):
-        # Todo: Check XML against XSD
         try:
             with tarfile.open(self._path) as tar:
                 files = tar.getmembers()
@@ -72,6 +75,14 @@ class AIP(AbstractIP):
                         self._metadata = os.path.join(self._temp.name, "DIPSARCH.xml")
                     else:
                         self._files.append(f.name)
+            if not self._metadata:
+                self._tb = "No metadata file (DIPSARCH.xml) found!"
+                self._initsuccess = False
+                return
+
+            if not self._validateAIP():
+                self._initsuccess = False
+                return
 
             self._extractmetadata()
             os.rename(self._metadata, os.path.join(self._temp.name, str(self.ipid) + ".xml"))
@@ -81,9 +92,36 @@ class AIP(AbstractIP):
             self._tb += "".join(traceback.format_exception(e, limit=10))
             self._initsuccess = False
 
-    def _extractmetadata(self):  # Todo: Use Saxon for XML processing
-        dipsarch = ET.parse(self._metadata)
+    def _validateAIP(self):
+        # Note: This method doesn't use the SaxonC processor, because the free
+        # SaxonC Home Edition (HE) doesn't support xsd validation.
+        xmlschema_doc = etree.parse(self._xsd)
+        xmlschema = etree.XMLSchema(xmlschema_doc)
+
+        xml_doc = etree.parse(self._metadata)
+        if not xmlschema.validate(xml_doc):
+            self._tb += "AIP DIPSARCH.xml is invalid!"
+            return False
+
         ns = "{http://dips.bundesarchiv.de/schema}"
+        dipsarch = ET.parse(self._metadata)
+        metafiles = dipsarch.findall(
+                "./" + ns + "intellectualEntity//" + ns + "linkingObjectIdentifier/" +
+                ns + "linkingObjectIdentifierValue")
+        for m in metafiles:
+            if not any(os.path.splitext(f)[0] == m.text for f in self._files):
+                self._tb += "AIP is incomplete! Object " + m.text +\
+                            " is mentioned in DIPSARCH.xml but not present as file."
+                return False
+
+        return True
+
+    def _extractmetadata(self):
+        # Note: This method doesn't use the SaxonC processor, because the free
+        # SaxonC Home Edition (HE) doesn't support namespace declaration and can
+        # therefore not be used to parse the namespaced DIPSARCH.xml
+        ns = "{http://dips.bundesarchiv.de/schema}"
+        dipsarch = ET.parse(self._metadata)
 
         self._parent = dipsarch.find("./" + ns + "AIP/" + ns + "Parent")
         if self._parent is not None:

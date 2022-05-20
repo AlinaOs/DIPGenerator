@@ -5,6 +5,7 @@
                 xmlns:map="http://www.w3.org/2005/xpath-functions/map"
                 xmlns:math="http://www.w3.org/2005/xpath-functions/math"
                 xmlns:dips="http://dips.bundesarchiv.de/schema"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xmlns:gen="gen"
                 exclude-result-prefixes="#all"
                 expand-text="yes"
@@ -44,7 +45,8 @@
 
     <xsl:template match="/*" mode="#all">
         <dips_dip xmlns="dipsdip">
-            <xsl:attribute name="dips:schemaLocation" select="map:get($json, 'schema')"/>
+            <xsl:namespace name="xsi" select="'http://www.w3.org/2001/XMLSchema-instance'"/>
+            <xsl:attribute name="xsi:schemaLocation" select="concat('http://dips.bundesarchiv.de/schema', ' ', map:get($json, 'schema'))"/>
             <DIP>
                 <DIPID>
                     <xsl:value-of select="map:get($json, 'id')"/>

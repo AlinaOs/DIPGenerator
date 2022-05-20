@@ -187,7 +187,7 @@ class DIPRequestHandler:
             aipid = aipid[0:-4]
             if aipid not in self._aips and aipid not in aipids:
                 # Try to create an AIP object.
-                aip = AIP(p, self._tempdir)
+                aip = AIP(p, os.path.join(self._confdir, self._conf["AIPschema"]), self._tempdir)
 
                 # Check, if tar is AIP.
                 if not aip.initsuccess():
