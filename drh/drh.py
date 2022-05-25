@@ -43,7 +43,7 @@ class DIPRequestHandler:
     def startrequest(self, uchoices):
         resp = DrhResponse()
         aips, errors = self._parseaip(uchoices["chosenAips"], mode="req")
-        if len(errors) > 0:
+        if errors is not None and len(errors) > 0:
             resp.newerror(errors)
             return resp
         resp.newsuccess(ip="AIP", type_="parse", detail="Request AIPs")
@@ -57,11 +57,11 @@ class DIPRequestHandler:
             xsdpath = os.path.join(self._confdir, self._conf["profileConfigs"]["profile0"]["xsd"])
             for a in aips:
                 errs = a.save(path)
-                if errs:
+                if errs is not None:
                     resp.newerror(SavingError("AIP", errs))
                     return resp
                 errs = a.savexsd(path, xsdpath)
-                if errs:
+                if errs is not None:
                     resp.newerror(SavingError("AIP", errs))
                     return resp
             resp.newsuccess(detail=path, ip="AIP", type_="save")
@@ -88,7 +88,7 @@ class DIPRequestHandler:
         resp.newsuccess(ip="DIP", type_="parse", detail=dip.getid())
         if uchoices["deliveryType"] != "viewer":
             errs = dip.save(uchoices["outputPath"])
-            if errs:
+            if errs is not None:
                 resp.newerror(SavingError(dip.getid(), errs))
                 return resp
             resp.newsuccess(detail=os.path.join(uchoices["outputPath"], dip.getid()), ip="DIP", type_="save")
@@ -101,12 +101,12 @@ class DIPRequestHandler:
                 return resp
             resp.newsuccess(ip="VDIP", type_="parse", detail=vdip.getid())
             errs = vdip.save(uchoices["outputPath"])
-            if errs:
+            if errs is not None:
                 resp.newerror(SavingError(vdip.getid(), errs))
                 return resp
             resp.newsuccess(detail=os.path.join(uchoices["outputPath"], vdip.getid()), ip="VDIP", type_="save")
-            return resp
 
+        return resp
 
     def getinfo(self, prop):
         return self._info[prop]
