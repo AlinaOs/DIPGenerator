@@ -10,8 +10,7 @@ from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
                                QLayout, QMainWindow, QPushButton, QRadioButton,
                                QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
                                QStackedWidget, QStatusBar, QTextBrowser, QVBoxLayout,
-                               QWidget, QLineEdit, QToolButton, QStyle, QFileDialog)
-
+                               QWidget, QLineEdit, QToolButton, QStyle, QFileDialog, QButtonGroup)
 from rv import snippets
 
 lwl_darkred = "#9b182a"  # RGB 155/24/42
@@ -45,10 +44,15 @@ icon_check = QIcon() # https://www.iconshock.com/freeicons/check-circle-fill-24
 icon_check.addFile("svg/Check.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_link = QIcon()
 icon_link.addFile("svg/LWL_Link.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_directory = QIcon()
+icon_directory.addFile("svg/Directory.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_file = QIcon()
+icon_file.addFile("svg/LWL_Dokument.svg", QSize(), QIcon.Normal, QIcon.Off)
 
 
-class Ui_MainWindow(object):
+class RvMainWindow(QMainWindow):
     def __init__(self):
+        super().__init__()
         self.centralwidget = None
         self.stackedWidget = None
         self.profilesLabel = None
@@ -61,8 +65,12 @@ class Ui_MainWindow(object):
         self.steps = []
         self.stepTitles = []
         self.stepInfos = []
+        self.menuGroup = QButtonGroup()
+        self.infoGroup = QButtonGroup()
 
-        self.spinnerBtns = []
+        self.aipFileSpinner = None
+        self.vzeFileSpinner = None
+        self.spinnerGoBtn = None
 
         self.profiles = []
         self.profileHeaders = []
@@ -70,18 +78,27 @@ class Ui_MainWindow(object):
         self.profileRecoms = []
         self.profileDetails = []
         self.profileInfos = []
+        self.profileGroup = QButtonGroup()
+        self.profDetGroup = QButtonGroup()
+        self.profDetGroup.setExclusive(False)
 
         self.aips = []
         self.aipInfos = []
         self.aipDetails = []
         self.aipTitles = []
-        self.aipDescs =[]
+        self.aipDescs = []
         self.aipFormats = []
+        self.repsGroup = QButtonGroup()
+        self.repsDetGroup = QButtonGroup()
+        self.repsDetGroup.setExclusive(False)
 
-    def setupUi(self, MainWindow):
-        if not MainWindow.objectName():
-            MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(794, 570)
+        self.overviewGroup = QButtonGroup()
+
+        self.setupUi()
+
+    def setupUi(self):
+        self.setObjectName(u"MainWindow")
+        self.resize(794, 570)
         palette = QPalette()
         brush1 = QBrush(QColor(255, 255, 255, 255))
         brush1.setStyle(Qt.SolidPattern)
@@ -106,10 +123,10 @@ class Ui_MainWindow(object):
         palette.setBrush(QPalette.Disabled, QPalette.Base, brush1)
         palette.setBrush(QPalette.Disabled, QPalette.Window, brush1)
         palette.setBrush(QPalette.Disabled, QPalette.AlternateBase, brush1)
-        MainWindow.setPalette(palette)
-        MainWindow.setCursor(QCursor(Qt.ArrowCursor))
-        MainWindow.setContextMenuPolicy(Qt.NoContextMenu)
-        self.centralwidget = QWidget(MainWindow)
+        self.setPalette(palette)
+        self.setCursor(QCursor(Qt.ArrowCursor))
+        self.setContextMenuPolicy(Qt.NoContextMenu)
+        self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setStyleSheet(u"")
 
@@ -118,19 +135,25 @@ class Ui_MainWindow(object):
         menuLayout.setObjectName(u"menuLayout")
         menuLayout.setContentsMargins(-1, -1, -1, 20)
 
+        self.menuGroup.setParent(self.centralwidget)
         btnd = MenuButton(self.centralwidget, "btnDIP", True)
         menuLayout.addWidget(btnd)
         self.menuButtons.append(btnd)
+        self.menuGroup.addButton(btnd)
+        self.menuGroup.setId(btnd, 0)
         for i in range(1, 4):
             btn = MenuButton(self.centralwidget, "btnHelp" + str(i), False)
             menuLayout.addWidget(btn)
             self.menuButtons.append(btn)
+            self.menuGroup.addButton(btn)
+            self.menuGroup.setId(btn, i)
 
         content = QWidget()
         content.setObjectName(u"content")
         contentLayoutV = QVBoxLayout(content)
         contentLayoutV.setObjectName(u"contentLayoutV")
 
+        self.infoGroup.setParent(content)
         # Create Step Header
         for i in range(1, 4):
             stepFrame = QFrame(content)
@@ -196,37 +219,29 @@ class Ui_MainWindow(object):
             self.stepInfos.append(info)
             self.stepHeaders.append(stepFrame)
 
+            self.infoGroup.addButton(info)
+            self.infoGroup.setId(info, i)
+
         # Create Step 1 (file spinner)
-        for i in range(3):
-            btn = QToolButton(content)
-            btn.setObjectName(u"fsbtn")
-            btn.setMinimumSize(QSize(30, 30))
-            btn.setMaximumSize(QSize(30, 30))
-            btn.setIcon(icon_allpages)
-            self.spinnerBtns.append(btn)
-        self.spinnerBtns[2].setIcon(icon_check)
+        self.spinnerGoBtn = QToolButton(content)
+        self.spinnerGoBtn.setObjectName(u"fsgobtn")
+        self.spinnerGoBtn.setMinimumSize(QSize(30, 30))
+        self.spinnerGoBtn.setMaximumSize(QSize(30, 30))
+        self.spinnerGoBtn.setIcon(icon_allpages)
+        self.spinnerGoBtn.setIcon(icon_check)
 
-        self.aipFileSpinner = QLineEdit(content)
-        self.aipFileSpinner.setObjectName(u"aipfs")
-        self.aipFileSpinner.setClearButtonEnabled(True)
-        self.spinnerBtns[0].clicked.connect(self.getpath)
-
-        self.vzeFileSpinner = QLineEdit(content)
-        self.vzeFileSpinner.setObjectName(u"vzefs")
-        self.vzeFileSpinner.setClearButtonEnabled(True)
-        self.spinnerBtns[1].clicked.connect(self.getpath)
+        self.aipFileSpinner = FileSpinner(content, "a")
+        self.vzeFileSpinner = FileSpinner(content, "v")
 
         # Layout file spinners
         fileSpinnerLayoutH = QHBoxLayout()
         fileSpinnerLayoutH.setObjectName(u"fileSpinnerWidget")
         fileSpinnerLayoutH.setContentsMargins(10, 10, 10, 20)
-        fileSpinnerLayoutH.addWidget(self.aipFileSpinner)
-        fileSpinnerLayoutH.addWidget(self.spinnerBtns[0])
+        self.aipFileSpinner.addToLayout(fileSpinnerLayoutH)
         fileSpinnerLayoutH.addItem(QSpacerItem(30, 30, QSizePolicy.Minimum, QSizePolicy.Minimum))
-        fileSpinnerLayoutH.addWidget(self.vzeFileSpinner)
-        fileSpinnerLayoutH.addWidget(self.spinnerBtns[1])
+        self.vzeFileSpinner.addToLayout(fileSpinnerLayoutH)
         fileSpinnerLayoutH.addItem(QSpacerItem(30, 30, QSizePolicy.Minimum, QSizePolicy.Minimum))
-        fileSpinnerLayoutH.addWidget(self.spinnerBtns[2])
+        fileSpinnerLayoutH.addWidget(self.spinnerGoBtn)
 
         # Create step 2 (profiles)
         self.profilesLabel = QLabel(content)
@@ -243,7 +258,10 @@ class Ui_MainWindow(object):
         self.pScrollAreaContents = QWidget()
         self.pScrollAreaContents.setObjectName(u"self.pScrollAreaContents")
         self.pScrollAreaContents.setGeometry(QRect(0, -4, 497, 174))
-        
+
+        self.profileGroup.setParent(self.pScrollAreaContents)
+        self.profDetGroup.setParent(self.pScrollAreaContents)
+
         # Create profiles
         for i in range(4):
             pTitle = LabelButton(self.pScrollAreaContents)
@@ -275,13 +293,21 @@ class Ui_MainWindow(object):
             pLayout = QVBoxLayout()
             pLayout.setObjectName(u"p"+str(i)+"Layout")
             pLayout.addLayout(pHeaderLayout)
-            self.createitb(self.pScrollAreaContents, pLayout, "p")
+            self.profileInfos.append(None)
+            # self.createitb(self.pScrollAreaContents, pLayout, "p", i)
             pLayout.setStretch(1, 1)
 
             self.profileTitles.append(pTitle)
             self.profileRecoms.append(pRecom)
             self.profileDetails.append(pDetail)
             self.profiles.append(pLayout)
+
+            self.profileGroup.addButton(pTitle)
+            self.profileGroup.setId(pTitle, i)
+            self.profDetGroup.addButton(pDetail)
+            self.profDetGroup.setId(pDetail, i)
+
+        self.profileTitles[1].setChecked(True)
 
         # Layout scroll area contents
         verticalLayout_9 = QVBoxLayout(self.pScrollAreaContents)
@@ -317,12 +343,17 @@ class Ui_MainWindow(object):
         self.rScrollAreaContents = QWidget()
         self.rScrollAreaContents.setObjectName(u"repsScrollAreaContents")
         self.rScrollAreaContents.setGeometry(QRect(0, 0, 510, 135))
-        verticalLayout_2 = QVBoxLayout(self.rScrollAreaContents)
-        verticalLayout_2.setSpacing(0)
-        verticalLayout_2.setObjectName(u"verticalLayout_2")
-        verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.repLayoutV = QVBoxLayout(self.rScrollAreaContents)
+        self.repLayoutV.setSpacing(0)
+        self.repLayoutV.setObjectName(u"repLayoutV")
+        self.repLayoutV.setContentsMargins(0, 0, 0, 0)
+        self.repLayoutV.setSpacing(10)
 
-        self.createAIP(verticalLayout_2, self.rScrollAreaContents)
+        self.repsGroup.setParent(self.rScrollAreaContents)
+        self.repsDetGroup.setParent(self.rScrollAreaContents)
+
+        # self.createAIP(self.repLayoutV, self.rScrollAreaContents)
+        # self.aipTitles[0].setChecked(True)
 
         self.rScrollArea.setWidget(self.rScrollAreaContents)
 
@@ -426,8 +457,17 @@ class Ui_MainWindow(object):
         self.label.setIndent(1)
 
         self.btnViewer = OverviewRadioBtn(overviewFrame, "btnViewer")
+        self.btnViewer.setChecked(True)
         self.btnDownload = OverviewRadioBtn(overviewFrame, "btnDownload")
         self.btnBoth = OverviewRadioBtn(overviewFrame, "btnBoth")
+
+        self.overviewGroup.setParent(overviewFrame)
+        self.overviewGroup.addButton(self.btnViewer)
+        self.overviewGroup.setId(self.btnViewer, 0)
+        self.overviewGroup.addButton(self.btnDownload)
+        self.overviewGroup.setId(self.btnDownload, 1)
+        self.overviewGroup.addButton(self.btnBoth)
+        self.overviewGroup.setId(self.btnBoth, 2)
 
         deliveryButtonsLayout = QVBoxLayout()
         deliveryButtonsLayout.setSpacing(0)
@@ -478,17 +518,17 @@ class Ui_MainWindow(object):
         centralWidgetLayoutH.addLayout(leftLayout)
         centralWidgetLayoutH.addWidget(overviewFrame)
 
-        MainWindow.setCentralWidget(self.centralwidget)
-        statusbar = QStatusBar(MainWindow)
+        self.setCentralWidget(self.centralwidget)
+        statusbar = QStatusBar(self)
         statusbar.setObjectName(u"statusbar")
         statusbar.setEnabled(True)
         statusbar.setStyleSheet("QStatusBar{background-color: "+lwl_lightgray+"}")
-        MainWindow.setStatusBar(statusbar)
+        self.setStatusBar(statusbar)
 
-        self.retranslateUi(MainWindow)
+        self.retranslateUi()
     # setupUi
 
-    def createAIP(self, vl, parent):
+    def createAIP(self, vl, parent, index_):
         aiptitle = LabelButton(parent)
         aiptitle.setObjectName(u"aiptitle")
         aiptitle.setMinimumSize(QSize(60, 17))
@@ -528,7 +568,7 @@ class Ui_MainWindow(object):
         aipLayout.setSpacing(10)
         aipLayout.setObjectName(u"aipLayout")
         aipLayout.addLayout(aipHeaderLayout)
-        self.createitb(parent, aipLayout, "a")
+        self.aipInfos.append(None)
         aipLayout.setStretch(1, 1)
         vl.addLayout(aipLayout)
 
@@ -538,72 +578,70 @@ class Ui_MainWindow(object):
         self.aipDetails.append(aipdetails)
         self.aips.append(aipLayout)
 
-    def createitb(self, parent, layout, type_):
+        self.repsGroup.addButton(aiptitle)
+        self.repsGroup.setId(aiptitle, index_)
+        self.repsDetGroup.addButton(aipdetails)
+        self.repsDetGroup.setId(aipdetails, index_)
+
+    def createitb(self, parent, layout, type_, index_):
         info = InfoTextBrowser(parent)
         if type_ == "a":
-            self.aipInfos.append(info)
+            self.aipInfos[index_] = info
         elif type_ == "p":
-            self.profileInfos.append(info)
+            self.profileInfos[index_] = info
         layout.addWidget(info)
 
-    def getpath(self):
-        dialog = QFileDialog()
-        dialog.setViewMode(QFileDialog.Detail)
-        dialog.setFileMode(QFileDialog.AnyFile)
-        dialog.setNameFilter("Ordner oder TAR (*\ *.tar)")
-        if dialog.exec_():
-            self.aipFileSpinner.setText(str(dialog.selectedFiles()))
-
-
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"DIP Request Viewer", None))
-        MainWindow.setStatusTip("")
+    def retranslateUi(self):
+        self.setWindowTitle(QCoreApplication.translate("self", u"DIP Request Viewer", None))
+        self.setStatusTip("")
         self.centralwidget.setStatusTip("")
         for i in range(4):
-            self.menuButtons[i].setStatusTip(QCoreApplication.translate("MainWindow", snippets.menuStatuses[i], None))
-            self.menuButtons[i].setText(QCoreApplication.translate("MainWindow", snippets.menuTitles[i], None))
+            self.menuButtons[i].setStatusTip(QCoreApplication.translate("self", snippets.menuStatuses[i], None))
+            self.menuButtons[i].setText(QCoreApplication.translate("self", snippets.menuTitles[i], None))
 
         for i in range(3):
-            self.stepTitles[i].setText(QCoreApplication.translate("MainWindow", snippets.stepTitles[i], None))
-            self.steps[i].setText(QCoreApplication.translate("MainWindow", u"Schritt "+str(i+1), None))
-            self.stepInfos[i].setToolTip(QCoreApplication.translate("MainWindow", u"Hilfe", None))
+            self.stepTitles[i].setText(QCoreApplication.translate("self", snippets.stepTitles[i], None))
+            self.steps[i].setText(QCoreApplication.translate("self", u"Schritt "+str(i+1), None))
+            self.stepInfos[i].setToolTip(QCoreApplication.translate("self", u"Hilfe", None))
 
         for i in range(4):
-            self.profileTitles[i].setText(QCoreApplication.translate("MainWindow", snippets.profileTitles[i], None))
-            self.profileRecoms[i].setText(QCoreApplication.translate("MainWindow", snippets.profileRecom[i], None))
-            self.profileDetails[i].setText(QCoreApplication.translate("MainWindow", u"Details", None))
-            self.profileInfos[i].setHtml(QCoreApplication.translate("MainWindow", snippets.profileInfos[i], None))
+            self.profileTitles[i].setText(QCoreApplication.translate("self", snippets.profileTitles[i], None))
+            self.profileRecoms[i].setText(QCoreApplication.translate("self", snippets.profileRecom[i], None))
+            self.profileDetails[i].setText(QCoreApplication.translate("self", u"Details", None))
+            if self.profileInfos[i]:
+                self.profileInfos[i].setHtml(QCoreApplication.translate("self", snippets.profileInfos[i], None))
 
-        self.infopage.setHtml(QCoreApplication.translate("MainWindow", snippets.infoTexts[0], None))
+        self.infopage.setHtml(QCoreApplication.translate("self", snippets.infoTexts[0], None))
 
-        self.profilesLabel.setText(QCoreApplication.translate("MainWindow", u"W\u00e4hlen Sie hier, wie die technischen Daten des Archivales f\u00fcr Sie aufbereitet werden sollen!", None))
+        self.profilesLabel.setText(QCoreApplication.translate("self", u"W\u00e4hlen Sie hier, wie die technischen Daten des Archivales f\u00fcr Sie aufbereitet werden sollen!", None))
 
-        self.repsLabel.setText(QCoreApplication.translate("MainWindow", u"W\u00e4hlen Sie hier, welche technischen Repr\u00e4sentationen des Archivales Sie sehen wollen!", None))
-
-        for i in range(len(self.aips)):
-            self.aipTitles[i].setText(QCoreApplication.translate("MainWindow", snippets.aipTitles[i], None))
-            self.aipDescs[i].setText(QCoreApplication.translate("MainWindow", snippets.aipDescs[i], None))
-            self.aipFormats[i].setText(QCoreApplication.translate("MainWindow", snippets.aipFormats[i], None))
-            self.aipDetails[i].setText(QCoreApplication.translate("MainWindow", u"Details", None))
-            self.aipInfos[i].setHtml(QCoreApplication.translate("MainWindow", snippets.aipInfos[i], None))
+        self.repsLabel.setText(QCoreApplication.translate("self", u"W\u00e4hlen Sie hier, welche technischen Repr\u00e4sentationen des Archivales Sie sehen wollen!", None))
+        if len(self.aips) > 1:
+            for i in range(len(self.aips)):
+                self.aipTitles[i].setText(QCoreApplication.translate("self", snippets.aipTitles[i], None))
+                self.aipDescs[i].setText(QCoreApplication.translate("self", snippets.aipDescs[i], None))
+                self.aipFormats[i].setText(QCoreApplication.translate("self", snippets.aipFormats[i], None))
+                self.aipDetails[i].setText(QCoreApplication.translate("self", u"Details", None))
+                if self.aipInfos[i]:
+                    self.aipInfos[i].setHtml(QCoreApplication.translate("self", snippets.aipInfos[i], None))
 
         self.aipFileSpinner.setPlaceholderText(u"AIP-Datei")
         self.vzeFileSpinner.setPlaceholderText(u"Archivsoftware-Export")
 
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Ihre Auswahl", None))
-        self.ieTextBrowser.setHtml(QCoreApplication.translate("MainWindow", snippets.overviewTexts[0], None))
-        self.profileTextBrowser.setHtml(QCoreApplication.translate("MainWindow", snippets.overviewTexts[1], None))
-        self.repTextBrowser.setHtml(QCoreApplication.translate("MainWindow", snippets.overviewTexts[2], None))
+        self.label_3.setText(QCoreApplication.translate("self", u"Ihre Auswahl", None))
+        self.ieTextBrowser.setHtml(QCoreApplication.translate("self", snippets.overviewTexts[0], None))
+        self.profileTextBrowser.setHtml(QCoreApplication.translate("self", snippets.overviewTexts[1], None))
+        self.repTextBrowser.setHtml(QCoreApplication.translate("self", snippets.overviewTexts[2], None))
 
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Bereitstellung", None))
+        self.label.setText(QCoreApplication.translate("self", u"Bereitstellung", None))
         self.btnViewer.setToolTip("")
-        self.btnViewer.setText(QCoreApplication.translate("MainWindow", u"Viewer", None))
+        self.btnViewer.setText(QCoreApplication.translate("self", u"Viewer", None))
         self.btnDownload.setToolTip("")
-        self.btnDownload.setText(QCoreApplication.translate("MainWindow", u"Download", None))
+        self.btnDownload.setText(QCoreApplication.translate("self", u"Download", None))
         self.btnBoth.setToolTip("")
-        self.btnBoth.setText(QCoreApplication.translate("MainWindow", u"Beides", None))
-        self.goButton.setStatusTip(QCoreApplication.translate("MainWindow", u"DIP anfordern", None))
-        self.goButton.setText(QCoreApplication.translate("MainWindow", u"Los", None))
+        self.btnBoth.setText(QCoreApplication.translate("self", u"Beides", None))
+        self.goButton.setStatusTip(QCoreApplication.translate("self", u"DIP anfordern", None))
+        self.goButton.setText(QCoreApplication.translate("self", u"Los", None))
     # retranslateUi
 
 
@@ -633,6 +671,76 @@ class MenuButton(QPushButton):
         self.setCheckable(True)
         self.setChecked(checked)
         self.setFlat(False)
+
+
+class FileSpinner:
+    def __init__(self, parent, type_):
+        self.type_ = type_
+        self.paths = None
+
+        self.edit = QLineEdit(parent)
+        self.edit.setObjectName(u"aipfs")
+        self.edit.setClearButtonEnabled(True)
+        self.edit.textChanged.connect(self.checkclearing)
+
+        self.btn = QToolButton(parent)
+        self.btn.setObjectName(u"fsbtn")
+        self.btn.setMinimumSize(QSize(30, 30))
+        self.btn.setMaximumSize(QSize(30, 30))
+        self.btn.setIcon(icon_file)
+        self.btn.clicked.connect(self.getpath)
+
+        self.btndir = None
+        if type_ == "a":
+            self.btndir = QToolButton(parent)
+            self.btndir.setObjectName(u"fsdbtn")
+            self.btndir.setMinimumSize(QSize(30, 30))
+            self.btndir.setMaximumSize(QSize(30, 30))
+            self.btndir.setIcon(icon_directory)
+            self.btndir.clicked.connect(self.getdirpath)
+
+    def checkclearing(self, text):
+        if text == "":
+            self.paths = None
+
+    def getdirpath(self):
+        self.getpath("dir")
+
+    def getpath(self, filemode=None):
+        dialog = QFileDialog()
+        dialog.setViewMode(QFileDialog.Detail)
+        if filemode == "dir":
+            dialog.setFileMode(QFileDialog.Directory)
+        elif self.type_ == "v":
+            dialog.setFileMode(QFileDialog.ExistingFile)
+            dialog.setNameFilter("XML files (*.xml)")
+        else:
+            dialog.setFileMode(QFileDialog.ExistingFiles)
+
+        if dialog.exec_():
+            if filemode == "dir" or self.type_ == "v":
+                self.paths = dialog.selectedFiles()[0]
+                self.edit.setText(self.paths)
+            else:
+                self.paths = dialog.selectedFiles()
+                if len(self.paths) > 1:
+                    self.edit.setText(str(self.paths))
+                else:
+                    self.edit.setText(self.paths[0])
+
+    def setToolTip(self, text1, text2=None):
+        self.btn.setToolTip(text1)
+        if text2 and self.btndir:
+            self.btndir.setToolTip(text2)
+
+    def setPlaceholderText(self, text):
+        self.edit.setPlaceholderText(text)
+
+    def addToLayout(self, layout):
+        layout.addWidget(self.edit)
+        layout.addWidget(self.btn)
+        if self.btndir:
+            layout.addWidget(self.btndir)
 
 
 class OverviewTextBrowser(QTextBrowser):

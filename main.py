@@ -1,5 +1,5 @@
 from drh.drh import DIPRequestHandler
-from rv.gui import RequestViewer
+from rv.rv import RequestViewer
 
 confdir = "config/DIP/"
 conf = "profile_conf.json"
@@ -89,4 +89,4 @@ uc3 = {
 # print("Request 3:")
 # req1.printresponse()
 
-rv = RequestViewer()
+rv = RequestViewer(drh)
