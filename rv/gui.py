@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
                                QStackedWidget, QStatusBar, QTextBrowser, QVBoxLayout,
                                QWidget, QLineEdit, QToolButton, QStyle, QFileDialog, QButtonGroup)
 from rv import snippets
+from rv.snippets import UiTextProvider
 
 lwl_darkred = "#9b182a"  # RGB 155/24/42
 lwl_darkblue = "#00325f"  # RGB 0/50/95
@@ -51,10 +52,12 @@ icon_file.addFile("svg/LWL_Dokument.svg", QSize(), QIcon.Normal, QIcon.Off)
 
 
 class RvMainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, pn):
         super().__init__()
+        self.utp = UiTextProvider()
         self.centralwidget = None
         self.stackedWidget = None
+        self.pn = pn
         self.profilesLabel = None
         self.repsLabel = None
         self.pScrollArea = None
@@ -78,6 +81,7 @@ class RvMainWindow(QMainWindow):
         self.profileRecoms = []
         self.profileDetails = []
         self.profileInfos = []
+        self.pScrollAreaContents = None
         self.profileGroup = QButtonGroup()
         self.profDetGroup = QButtonGroup()
         self.profDetGroup.setExclusive(False)
@@ -88,6 +92,8 @@ class RvMainWindow(QMainWindow):
         self.aipTitles = []
         self.aipDescs = []
         self.aipFormats = []
+        self.rScrollAreaContents = None
+        self.repLayoutV = None
         self.repsGroup = QButtonGroup()
         self.repsDetGroup = QButtonGroup()
         self.repsDetGroup.setExclusive(False)
@@ -263,7 +269,7 @@ class RvMainWindow(QMainWindow):
         self.profDetGroup.setParent(self.pScrollAreaContents)
 
         # Create profiles
-        for i in range(4):
+        for i in range(self.pn):
             pTitle = LabelButton(self.pScrollAreaContents)
             pTitle.setObjectName(u"ptitle")
             pTitle.setMinimumSize(QSize(120, 18))
@@ -294,7 +300,6 @@ class RvMainWindow(QMainWindow):
             pLayout.setObjectName(u"p"+str(i)+"Layout")
             pLayout.addLayout(pHeaderLayout)
             self.profileInfos.append(None)
-            # self.createitb(self.pScrollAreaContents, pLayout, "p", i)
             pLayout.setStretch(1, 1)
 
             self.profileTitles.append(pTitle)
@@ -351,9 +356,6 @@ class RvMainWindow(QMainWindow):
 
         self.repsGroup.setParent(self.rScrollAreaContents)
         self.repsDetGroup.setParent(self.rScrollAreaContents)
-
-        # self.createAIP(self.repLayoutV, self.rScrollAreaContents)
-        # self.aipTitles[0].setChecked(True)
 
         self.rScrollArea.setWidget(self.rScrollAreaContents)
 
@@ -524,8 +526,6 @@ class RvMainWindow(QMainWindow):
         statusbar.setEnabled(True)
         statusbar.setStyleSheet("QStatusBar{background-color: "+lwl_lightgray+"}")
         self.setStatusBar(statusbar)
-
-        self.retranslateUi()
     # setupUi
 
     def createAIP(self, vl, parent, index_):
@@ -583,65 +583,75 @@ class RvMainWindow(QMainWindow):
         self.repsDetGroup.addButton(aipdetails)
         self.repsDetGroup.setId(aipdetails, index_)
 
-    def createitb(self, parent, layout, type_, index_):
+    def createitb(self, parent, layout, type_, index_, infotexts):
         info = InfoTextBrowser(parent)
+        info.setHtml(self.utp.constructProfileItb(infotexts))
         if type_ == "a":
             self.aipInfos[index_] = info
         elif type_ == "p":
             self.profileInfos[index_] = info
         layout.addWidget(info)
 
-    def retranslateUi(self):
-        self.setWindowTitle(QCoreApplication.translate("self", u"DIP Request Viewer", None))
-        self.setStatusTip("")
-        self.centralwidget.setStatusTip("")
+    def retranslateAips(self, titles, descs, formats):
+        self.repsLabel.setText(QCoreApplication.translate("self", snippets.repLabel, None))
+
+        for i in range(len(self.aips)):
+            self.aipTitles[i].setText(QCoreApplication.translate("self", titles, None))
+            self.aipDescs[i].setText(QCoreApplication.translate("self", descs, None))
+            self.aipFormats[i].setText(QCoreApplication.translate("self", formats, None))
+            self.aipDetails[i].setText(QCoreApplication.translate("self", snippets.details, None))
+
+    def retranslateProfiles(self, nos, titles, recoms, infos=None):
+        self.profilesLabel.setText(QCoreApplication.translate("self", snippets.profLabel, None))
+
+        for i in range(self.pn):
+            self.profileTitles[i].setText(
+                QCoreApplication.translate("self", snippets.profile + " " + str(nos[i]) + " - " + titles[i], None))
+            self.profileRecoms[i].setText(QCoreApplication.translate("self", recoms[i], None))
+            self.profileDetails[i].setText(QCoreApplication.translate("self", snippets.details, None))
+
+    def setInfoPage(self, info):
+        self.infopage.setHtml(self.utp.constructItb(info))
+        self.stackedWidget.setCurrentIndex(1)
+
+    def retranslateBaseUi(self):
+        self.setWindowTitle(QCoreApplication.translate("self", snippets.windowTitle, None))
+
         for i in range(4):
             self.menuButtons[i].setStatusTip(QCoreApplication.translate("self", snippets.menuStatuses[i], None))
             self.menuButtons[i].setText(QCoreApplication.translate("self", snippets.menuTitles[i], None))
 
         for i in range(3):
             self.stepTitles[i].setText(QCoreApplication.translate("self", snippets.stepTitles[i], None))
-            self.steps[i].setText(QCoreApplication.translate("self", u"Schritt "+str(i+1), None))
-            self.stepInfos[i].setToolTip(QCoreApplication.translate("self", u"Hilfe", None))
-
-        for i in range(4):
-            self.profileTitles[i].setText(QCoreApplication.translate("self", snippets.profileTitles[i], None))
-            self.profileRecoms[i].setText(QCoreApplication.translate("self", snippets.profileRecom[i], None))
-            self.profileDetails[i].setText(QCoreApplication.translate("self", u"Details", None))
-            if self.profileInfos[i]:
-                self.profileInfos[i].setHtml(QCoreApplication.translate("self", snippets.profileInfos[i], None))
+            self.steps[i].setText(QCoreApplication.translate("self", snippets.step + " " + str(i+1), None))
+            self.stepInfos[i].setToolTip(QCoreApplication.translate("self", snippets.help, None))
 
         self.infopage.setHtml(QCoreApplication.translate("self", snippets.infoTexts[0], None))
 
-        self.profilesLabel.setText(QCoreApplication.translate("self", u"W\u00e4hlen Sie hier, wie die technischen Daten des Archivales f\u00fcr Sie aufbereitet werden sollen!", None))
+        self.aipFileSpinner.setPlaceholderText(QCoreApplication.translate("self", snippets.spinnerPh[0], None))
+        self.vzeFileSpinner.setPlaceholderText(QCoreApplication.translate("self", snippets.spinnerPh[1], None))
+        self.aipFileSpinner.setToolTip(
+            QCoreApplication.translate("self", snippets.spinnerTooltip[0], None),
+            QCoreApplication.translate("self", snippets.spinnerTooltip[1], None)
+        )
+        self.vzeFileSpinner.setToolTip(QCoreApplication.translate("self", snippets.spinnerTooltip[2], None))
+        self.spinnerGoBtn.setToolTip(QCoreApplication.translate("self", snippets.spinnerTooltip[3], None))
+        self.spinnerGoBtn.setStatusTip(QCoreApplication.translate("self", snippets.spinnerTooltip[3], None))
 
-        self.repsLabel.setText(QCoreApplication.translate("self", u"W\u00e4hlen Sie hier, welche technischen Repr\u00e4sentationen des Archivales Sie sehen wollen!", None))
-        if len(self.aips) > 1:
-            for i in range(len(self.aips)):
-                self.aipTitles[i].setText(QCoreApplication.translate("self", snippets.aipTitles[i], None))
-                self.aipDescs[i].setText(QCoreApplication.translate("self", snippets.aipDescs[i], None))
-                self.aipFormats[i].setText(QCoreApplication.translate("self", snippets.aipFormats[i], None))
-                self.aipDetails[i].setText(QCoreApplication.translate("self", u"Details", None))
-                if self.aipInfos[i]:
-                    self.aipInfos[i].setHtml(QCoreApplication.translate("self", snippets.aipInfos[i], None))
-
-        self.aipFileSpinner.setPlaceholderText(u"AIP-Datei")
-        self.vzeFileSpinner.setPlaceholderText(u"Archivsoftware-Export")
-
-        self.label_3.setText(QCoreApplication.translate("self", u"Ihre Auswahl", None))
+        self.label_3.setText(QCoreApplication.translate("self", snippets.choice, None))
         self.ieTextBrowser.setHtml(QCoreApplication.translate("self", snippets.overviewTexts[0], None))
         self.profileTextBrowser.setHtml(QCoreApplication.translate("self", snippets.overviewTexts[1], None))
         self.repTextBrowser.setHtml(QCoreApplication.translate("self", snippets.overviewTexts[2], None))
 
-        self.label.setText(QCoreApplication.translate("self", u"Bereitstellung", None))
+        self.label.setText(QCoreApplication.translate("self", snippets.deliv, None))
         self.btnViewer.setToolTip("")
-        self.btnViewer.setText(QCoreApplication.translate("self", u"Viewer", None))
+        self.btnViewer.setText(QCoreApplication.translate("self", snippets.overviewBtns[0], None))
         self.btnDownload.setToolTip("")
-        self.btnDownload.setText(QCoreApplication.translate("self", u"Download", None))
+        self.btnDownload.setText(QCoreApplication.translate("self", snippets.overviewBtns[1], None))
         self.btnBoth.setToolTip("")
-        self.btnBoth.setText(QCoreApplication.translate("self", u"Beides", None))
-        self.goButton.setStatusTip(QCoreApplication.translate("self", u"DIP anfordern", None))
-        self.goButton.setText(QCoreApplication.translate("self", u"Los", None))
+        self.btnBoth.setText(QCoreApplication.translate("self", snippets.overviewBtns[2], None))
+        self.goButton.setStatusTip(QCoreApplication.translate("self", snippets.goStatus, None))
+        self.goButton.setText(QCoreApplication.translate("self", snippets.go, None))
     # retranslateUi
 
 
@@ -759,7 +769,7 @@ class OverviewTextBrowser(QTextBrowser):
 class InfoTextBrowser(QTextBrowser):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setObjectName(u"pInfo")
+        self.setObjectName(u"Info")
         self.setFont(font12)
         self.setFrameShape(QFrame.NoFrame)
         self.setFrameShadow(QFrame.Plain)

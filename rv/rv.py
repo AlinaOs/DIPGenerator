@@ -2,7 +2,10 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow
 
 from drh.drh import DIPRequestHandler
+from rv import snippets
 from rv.gui import RvMainWindow
+
+pn = 4  # Todo
 
 
 class RequestViewer:
@@ -16,12 +19,12 @@ class RequestViewer:
         self.output = None
 
         self.app = QApplication(sys.argv)
-        self.window = RvMainWindow()
+        self.window = RvMainWindow(pn)
 
-        for i in range(2):
-            self.window.createAIP(self.window.repLayoutV, self.window.rScrollAreaContents, i)
-        self.window.aipTitles[0].setChecked(True)
-        self.window.retranslateUi()
+        # for i in range(2): # Todo
+        #     self.window.createAIP(self.window.repLayoutV, self.window.rScrollAreaContents, i)
+        # self.window.aipTitles[0].setChecked(True)
+        self.retranslateUi()
 
         self.mbtns = self.window.menuGroup
         self.ibtns = self.window.infoGroup
@@ -35,9 +38,15 @@ class RequestViewer:
         self.window.show()
         self.app.exec()
 
+    def retranslateUi(self):
+        self.window.retranslateBaseUi()
+        info = self.drh.getprofileinfo()
+        self.window.retranslateProfiles(info["nos"], info["names"], info["recoms"])
+        # self.window.retranslateAips()
+
     def setclickhandlers(self):
         self.mbtns.buttonClicked.connect(self.navigate)
-        self.ibtns.buttonClicked.connect(self.navigate)
+        self.ibtns.buttonClicked.connect(self.navigateinfo)
         self.window.spinnerGoBtn.clicked.connect(self.getaipinfo)
         self.window.aipFileSpinner.edit.returnPressed.connect(self.getaipinfo)
         self.window.vzeFileSpinner.edit.returnPressed.connect(self.getaipinfo)
@@ -50,12 +59,20 @@ class RequestViewer:
         self.obtns.buttonClicked.connect(self.setdelivery)
         self.window.goButton.clicked.connect(self.startrequest)
 
+    def navigateinfo(self, btn):
+        id_ = self.ibtns.id(btn)
+        self.mbtns.button(id_).click()
+
     def navigate(self, btn):
-        if self.mbtns.id(btn) == 0:
-            self.window.stackedWidget.setCurrentIndex(0)
+        id_ = self.mbtns.id(btn)
+        if id_ == 1:
+            self.window.setInfoPage(self.drh.getinfo("profiles"))
+        elif id_ == 2:
+            self.window.setInfoPage(self.drh.getinfo("representations"))
+        elif id_ == 3:
+            self.window.setInfoPage(self.drh.getinfo("general"))
         else:
-            self.window.stackedWidget.setCurrentIndex(1)
-            # Todo: Get Info Texts from DRH and show them
+            self.window.stackedWidget.setCurrentIndex(0)
 
     def getaipinfo(self):
         aips = self.window.aipFileSpinner.paths
@@ -88,13 +105,23 @@ class RequestViewer:
     def toggleitb_p(self, btn, checked):
         id_ = self.pdbtns.id(btn)
         if checked:
+            pinfo = self.drh.getprofileinfo(id_)
+            infos = [
+                pinfo["desc"],
+                pinfo["suitability"],
+                pinfo["ieLevel"],
+                pinfo["itemLevel"],
+                pinfo["archivalProcess"],
+                pinfo["representations"],
+                pinfo["other"]
+            ]
             self.window.createitb(
                 self.window.pScrollAreaContents,
                 self.window.profiles[id_],
                 "p",
-                id_
+                id_,
+                infos
             )
-            # Todo: Get Info Texts from DRH and show them
         else:
             tb = self.window.profileInfos[id_]
             self.window.profileInfos[id_] = None

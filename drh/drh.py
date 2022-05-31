@@ -29,7 +29,7 @@ class DIPRequestHandler:
         descs = {}
         for profile in self._conf["profileConfigs"]:
             path = self._conf["profileConfigs"][profile]["desc"]
-            with open(os.path.join(self._confdir + path), "r") as desc:
+            with open(os.path.join(self._confdir + path), "r", encoding="UTF-8") as desc:
                 jsondesc = json.load(desc)
                 descs.update({profile: jsondesc})
         return descs
@@ -110,6 +110,17 @@ class DIPRequestHandler:
 
     def getinfo(self, prop):
         return self._info[prop]
+
+    def getprofileinfo(self, p=None):
+        if p is not None:
+            return self._descs["profile" + str(p)]["fullDesc"]
+        else:
+            info = {
+                "nos": [self._descs["profile" + str(i)]["no"] for i in range(4)],
+                "names": [self._descs["profile" + str(i)]["shortName"] for i in range(4)],
+                "recoms": [self._descs["profile" + str(i)]["recommendation"] for i in range(4)]
+            }
+            return info
 
     def getaipinfo(self, paths, vze=None):
         resp = InfoResponse()

@@ -1,15 +1,41 @@
 {
-  "representations": [
-    "Lorem ipsum",
-    "lorem ipsum dolor sit",
-    "Amet dolor lorem ipsum"
-  ],
-  "profiles": [
-    "lorem ipsum dolor sit",
-    "Amet dolor lorem ipsum"
-  ],
-  "general": [
-    "Amet dolor lorem ipsum",
-    "Lorem ipsum"
-  ]
+  "representations": {
+    "main": "Repräsentationen",
+    "sections": [
+      {
+        "sub": "Untertitel",
+        "paragraphs": [
+          "Lorem ipsum",
+          "lorem ipsum dolor sit",
+          "Amet dolor lorem ipsum"
+        ]
+      }
+    ]
+  },
+  "profiles": {
+    "main": "Profile",
+    "sections": [
+      {
+        "sub": "Untertitel",
+        "paragraphs": [
+          "Lorem ipsum",
+          "lorem ipsum dolor sit",
+          "Amet dolor lorem ipsum"
+        ]
+      }
+    ]
+  },
+  "general": {
+    "main": "Über dieses Programm",
+    "sections": [
+      {
+        "sub": "Untertitel",
+        "paragraphs": [
+          "Lorem ipsum",
+          "lorem ipsum dolor sit",
+          "Amet dolor lorem ipsum"
+        ]
+      }
+    ]
+  }
 }
