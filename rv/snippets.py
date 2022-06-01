@@ -136,7 +136,8 @@ stepTitles = [u"Archivale w\u00e4hlen", u"DIP-Profil w\u00e4hlen", u"Repr\u00e4s
 
 spinnerPh = [
     u"AIP-Datei",
-    u"Archivsoftware-Export"
+    u"Archivsoftware-Export",
+    u"Speichern unter"
 ]
 spinnerTooltip = [
     "Datei(en) wählen",

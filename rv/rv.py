@@ -1,11 +1,7 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow
-
+from PySide6.QtWidgets import QApplication
 from drh.drh import DIPRequestHandler
-from rv import snippets
 from rv.gui import RvMainWindow
-
-pn = 4  # Todo
 
 
 class RequestViewer:
@@ -14,14 +10,20 @@ class RequestViewer:
         self.aips = []
         self.vze = None
         self.chosenaips = []
-        self.delivery = "viewer"
-        self.profile = 1
+        self.delivery = None
+        self.profile = None
         self.output = None
         self.pinfo = self.drh.getprofileinfo()
 
-        self.app = QApplication(sys.argv)
-        self.window = RvMainWindow(pn)
+        # User choice markers: Has the user already chosen a profile, an aip, a delivery?
+        # If not, default settings shall be used, when the user changes a profile.
+        # If he has already chosen himself, those choices shall not be overruled!
+        self.aipuc = False
+        self.profuc = False
+        self.delivuc = False
 
+        self.app = QApplication(sys.argv)
+        self.window = RvMainWindow(len(self.pinfo["nos"]))
         self.retranslateUi()
 
         self.mbtns = self.window.menuGroup
@@ -33,11 +35,15 @@ class RequestViewer:
         self.obtns = self.window.overviewGroup
 
         self.setclickhandlers()
-        # Todo: Set default profile and delivery type
-        self.window.profileTitles[1].click()
-        self.window.btnViewer.click()
+        self.setdefaultprofile()
         self.window.show()
         self.app.exec()
+
+    def setdefaultprofile(self):
+        no = self.drh.getdefaultprofile()
+        profuc = self.profuc
+        self.window.profileTitles[no].click()
+        self.profuc = profuc
 
     def retranslateUi(self):
         self.window.retranslateBaseUi()
@@ -94,6 +100,7 @@ class RequestViewer:
             self.window.createAIP(self.window.repLayoutV, self.window.scrollAreaContents, i)
             aipformats.append(list(self.aips[i]["formats"]))
         self.window.retranslateAips(aipformats)
+        self.aipuc = False
         self.setdefaultaips()
 
         # Update overview with VZE info
@@ -107,17 +114,45 @@ class RequestViewer:
         )
 
     def setprofile(self, btn):
+        self.profuc = True
         self.profile = self.pbtns.id(btn)
         self.window.updateOvProTb(self.pinfo["nos"][self.profile], self.pinfo["names"][self.profile])
 
-        # Todo: Get and set standard AIP for chosen profile
-        if self.aips:
+        if not self.delivery or (not self.drh.deliverychoice(self.profile) or not self.delivuc):
+            deliv = self.drh.getdefaultdelivery(self.profile)
+            delivuc = self.delivuc
+            if deliv == "viewer":
+                self.window.btnViewer.click()
+            elif deliv == "both":
+                self.window.btnBoth.click()
+            else:
+                self.window.btnDownload.click()
+            self.delivuc = delivuc
+
+        if self.aips and (not self.drh.aipchoice(self.profile) or not self.aipuc):
             self.setdefaultaips()
 
     def setdefaultaips(self):
-        self.window.aipTitles[len(self.aips)-1].setChecked(True)
+        default = self.drh.getdefaultaips(self.profile)
+        aipuc = self.aipuc
+        if default == "all":
+            for a in self.window.aipTitles:
+                a.setChecked(True)
+        elif default == "frame":
+            self.window.aipTitles[0].setChecked(True)
+            if len(self.window.aipTitles) > 1:
+                self.window.aipTitles[-1].setChecked(True)
+                for i in range(1, len(self.window.aipTitles) - 1):
+                    self.window.aipTitles[i].setChecked(False)
+        else:  # latest
+            self.window.aipTitles[-1].setChecked(True)
+            if len(self.window.aipTitles) > 1:
+                for i in range(len(self.window.aipTitles) - 1):
+                    self.window.aipTitles[i].setChecked(False)
+        self.aipuc = aipuc
 
     def toggleaip(self, btn, checked):
+        self.aipuc = True
         if checked:
             self.chosenaips.append(self.rbtns.id(btn))
             self.chosenaips = sorted(self.chosenaips)
@@ -127,12 +162,13 @@ class RequestViewer:
             self.window.updateOvRepTb(self.chosenaips, True)
 
     def setdelivery(self, btn):
+        self.delivuc = True
         id_ = self.obtns.id(btn)
-        if id == 0:
+        if id_ == 0:
             self.delivery = "viewer"
-        elif id == 1:
+        elif id_ == 1:
             self.delivery = "download"
-        elif id == 2:
+        elif id_ == 2:
             self.delivery = "both"
 
     def toggleitb_p(self, btn, checked):
@@ -176,6 +212,15 @@ class RequestViewer:
             tb.close()
 
     def startrequest(self):
+        uc = {
+            "vzePath": self.window.vzeFileSpinner.paths,
+            "profileNo": self.profile,
+            "deliveryType": self.delivery,
+            "outputPath": self.window.outFileSpinner.paths,
+            "chosenAips": [self.aips[i]["path"] for i in self.chosenaips]
+        }
         print("Requested!")
-        # Todo: Start DIP Request and manage waiting time
+        # Todo: Show Response
+        resp = self.drh.startrequest(uc)
+        print(resp)
         self.window.goButton.setChecked(False)

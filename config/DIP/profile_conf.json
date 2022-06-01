@@ -29,7 +29,7 @@
             "xsd": "profiles/p1/DIP-P1.xsd",
             "AIPChoice": false,
             "defaultAIP": "latest",
-            "deliveryChoice": true,
+            "deliveryChoice": false,
             "defaultDelivery": "viewer",
             "profileMetadata":
                 {

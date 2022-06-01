@@ -31,7 +31,7 @@ font12.setPointSize(12)
 font12b = QFont()
 font12b.setFamilies(["Source Sans Pro"])
 font12b.setPointSize(12)
-font12b.setBold(True)
+font12b.setWeight(QFont.Weight.DemiBold)
 
 font14 = QFont()
 font14.setFamilies(["Source Sans Pro"])
@@ -104,6 +104,7 @@ class RvMainWindow(QMainWindow):
         self.repsDetGroup.setExclusive(False)
 
         self.overviewGroup = QButtonGroup()
+        self.outFileSpinner = None
 
         self.setupUi()
 
@@ -479,6 +480,13 @@ class RvMainWindow(QMainWindow):
         deliveryLayout.addWidget(self.label)
         deliveryLayout.addLayout(deliveryButtonsLayout)
 
+        # Output-Path
+        self.outFileSpinner = FileSpinner(overviewFrame, "o")
+        ofsLayoutH = QHBoxLayout()
+        ofsLayoutH.setContentsMargins(10, 20, 10, 10)
+        ofsLayoutH.setSpacing(4)
+        self.outFileSpinner.addToLayout(ofsLayoutH)
+
         # Request button
         self.goButton = LabelButton(overviewFrame)
         self.goButton.setObjectName(u"goButton")
@@ -502,9 +510,10 @@ class RvMainWindow(QMainWindow):
         verticalLayout.addWidget(self.profileTextBrowser)
         verticalLayout.addWidget(self.repTextBrowser)
         verticalLayout.addLayout(deliveryLayout)
+        verticalLayout.addLayout(ofsLayoutH)
         verticalLayout.addItem(QSpacerItem(17, 37, QSizePolicy.Minimum, QSizePolicy.Expanding))
         verticalLayout.addLayout(self.ovButtonLayout)
-        verticalLayout.setStretch(2, 2)
+        verticalLayout.setStretch(2, 4)
         verticalLayout.setStretch(4, 1)
 
         # Layout central widget / window
@@ -698,6 +707,8 @@ class RvMainWindow(QMainWindow):
         self.btnDownload.setText(QCoreApplication.translate("self", snippets.overviewBtns[1], None))
         self.btnBoth.setToolTip("")
         self.btnBoth.setText(QCoreApplication.translate("self", snippets.overviewBtns[2], None))
+        self.outFileSpinner.setPlaceholderText(QCoreApplication.translate("self", snippets.spinnerPh[2], None))
+        self.outFileSpinner.setToolTip(snippets.spinnerTooltip[1])
         self.goButton.setStatusTip(QCoreApplication.translate("self", snippets.goStatus, None))
         self.goButton.setText(QCoreApplication.translate("self", snippets.go, None))
     # retranslateUi
@@ -740,16 +751,20 @@ class FileSpinner:
         self.edit.setObjectName(u"aipfs")
         self.edit.setClearButtonEnabled(True)
         self.edit.textChanged.connect(self.update)
+        self.edit.setMinimumSize(QSize(50, 25))
+        self.edit.setFont(font12)
 
-        self.btn = QToolButton(parent)
-        self.btn.setObjectName(u"fsbtn")
-        self.btn.setMinimumSize(QSize(30, 30))
-        self.btn.setMaximumSize(QSize(30, 30))
-        self.btn.setIcon(icon_file)
-        self.btn.clicked.connect(self.getpath)
+        self.btn = None
+        if type_ != "o":
+            self.btn = QToolButton(parent)
+            self.btn.setObjectName(u"fsbtn")
+            self.btn.setMinimumSize(QSize(30, 30))
+            self.btn.setMaximumSize(QSize(30, 30))
+            self.btn.setIcon(icon_file)
+            self.btn.clicked.connect(self.getpath)
 
         self.btndir = None
-        if type_ == "a":
+        if type_ != "v":
             self.btndir = QToolButton(parent)
             self.btndir.setObjectName(u"fsdbtn")
             self.btndir.setMinimumSize(QSize(30, 30))
@@ -778,6 +793,7 @@ class FileSpinner:
             dialog.setNameFilter("XML files (*.xml)")
         else:
             dialog.setFileMode(QFileDialog.ExistingFiles)
+            dialog.setNameFilter("TAR files (*.tar)")
 
         if dialog.exec_():
             if filemode == "dir" or self.type_ == "v":
@@ -791,7 +807,10 @@ class FileSpinner:
                     self.edit.setText(self.paths[0])
 
     def setToolTip(self, text1, text2=None):
-        self.btn.setToolTip(text1)
+        if self.btn:
+            self.btn.setToolTip(text1)
+        else:
+            self.btndir.setToolTip(text1)
         if text2 and self.btndir:
             self.btndir.setToolTip(text2)
 
@@ -800,7 +819,8 @@ class FileSpinner:
 
     def addToLayout(self, layout):
         layout.addWidget(self.edit)
-        layout.addWidget(self.btn)
+        if self.btn:
+            layout.addWidget(self.btn)
         if self.btndir:
             layout.addWidget(self.btndir)
 

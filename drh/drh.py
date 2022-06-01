@@ -122,6 +122,21 @@ class DIPRequestHandler:
             }
             return info
 
+    def getdefaultprofile(self):
+        return self._conf["profileConfigs"][self._conf["standardProfile"]]["profileMetadata"]["profileNumber"]
+
+    def getdefaultdelivery(self, no):
+        return self._conf["profileConfigs"]["profile" + str(no)]["defaultDelivery"]
+
+    def getdefaultaips(self, no):
+        return self._conf["profileConfigs"]["profile" + str(no)]["defaultAIP"]
+
+    def deliverychoice(self, no):
+        return self._conf["profileConfigs"]["profile" + str(no)]["deliveryChoice"]
+
+    def aipchoice(self, no):
+        return self._conf["profileConfigs"]["profile" + str(no)]["AIPChoice"]
+
     def getaipinfo(self, paths, vze=None):
         resp = InfoResponse()
         aips, errors = self._parseaip(paths, vze=vze)
