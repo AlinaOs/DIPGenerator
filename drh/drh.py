@@ -126,7 +126,7 @@ class DIPRequestHandler:
         resp = InfoResponse()
         aips, errors = self._parseaip(paths, vze=vze)
         resp.newerror(errors)
-        if any(e.isfatal for e in errors):
+        if any(e.isfatal() for e in errors):
             return resp
 
         aipinfo = []
@@ -134,7 +134,8 @@ class DIPRequestHandler:
             aip = {
                 "n": str(a.getindex()),
                 "date": a.getdate()[0:10],
-                "formats": set(a.getformats())
+                "formats": set(a.getformats()),
+                "path": a.getpath()
             }
 
             files = []

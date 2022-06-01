@@ -53,7 +53,7 @@ class RequestViewer:
 
         self.pbtns.buttonClicked.connect(self.setprofile)
         self.pdbtns.buttonToggled.connect(self.toggleitb_p)
-        self.rbtns.buttonClicked.connect(self.addaip)
+        self.rbtns.buttonToggled.connect(self.addaip)
         self.rdbtns.buttonToggled.connect(self.toggleitb_r)
 
         self.obtns.buttonClicked.connect(self.setdelivery)
@@ -61,6 +61,8 @@ class RequestViewer:
 
     def navigateinfo(self, btn):
         id_ = self.ibtns.id(btn)
+        if id_-1 < 0:
+            id_ = 3
         self.mbtns.button(id_).click()
 
     def navigate(self, btn):
@@ -79,18 +81,33 @@ class RequestViewer:
         if aips is None:
             print("Error! Aips is None!")
             return
+
+        # Remove all present AIPs
+        self.aips = []
+        self.window.closeAips()
+
+        # Set new AIPs
         vze = self.window.vzeFileSpinner.paths
-        print(aips)
-        if vze:
-            print(vze)
-        # Todo: Get info from DRH and update AIPs/overview
+        info = self.drh.getaipinfo(aips, vze).getinfo()
+        self.aips = info["aipinfo"]
+        aipformats = []
+        for i in range(len(self.aips)):
+            self.window.createAIP(self.window.repLayoutV, self.window.scrollAreaContents, i)
+            aipformats.append(list(self.aips[i]["formats"]))
+        self.window.retranslateAips(aipformats)
+
+        # Todo: Update overview with VZE info
 
     def setprofile(self, btn):
         self.profile = self.pbtns.id(btn)
         # Todo: Update overview
 
-    def addaip(self, btn):
-        self.chosenaips.append(self.rbtns.id(btn))
+    def addaip(self, btn, checked):
+        if checked:
+            self.chosenaips.append(self.rbtns.id(btn))
+        else:
+            self.chosenaips.remove(self.rbtns.id(btn))
+
         # Todo: Update overview
 
     def setdelivery(self, btn):
@@ -134,7 +151,8 @@ class RequestViewer:
                 self.window.rScrollAreaContents,
                 self.window.aips[id_],
                 "a",
-                id_
+                id_,
+                self.aips[id_]
             )
             # Todo: Get Info Texts from DRH and show them
         else:

@@ -11,6 +11,12 @@ class UiTextProvider:
             "Verfügbare Repräsentationen",
             "Sonstiges"
         ]
+        self.aiptable = [
+            "Datei",
+            "Format",
+            "Dateigröße",
+            "Erhaltungslevel"
+        ]
 
     def _makep(self, text, margin=(0, 0, 0, 0), textindent=0, qtblockindent=0, fontweight=400, fontsize=12,
               font="Source Sans Pro"):
@@ -43,15 +49,36 @@ class UiTextProvider:
             ps += self._makep("<br>".join(infos[i]), margin=(0, 10, 5, 23))
         return self._htmlwrap(ps)
 
+    def constructRepItb(self, date, files):
+        ps = self._makep("<span style=\"font-weight: 600\">"+aipcreated+": </span>" + date, margin=(0, 10, 0, 20))
+        ps += "<table border=\"0\" style=\" margin-top:0px; margin-bottom:0px; margin-left:20px; " \
+              "margin-right:0px;\" cellspacing=\"10\" cellpadding=\"0\"><tr>"
+        for h in self.aiptable:
+            ps += "<td>" + self._makep(h, fontweight=600, margin=(0, 10, 0,  0)) + "</td>"
+        ps += "</tr>"
+
+        for f in files:
+            ps += "<tr>"
+            ps += "<td>" + self._makep(f["name"]) + "</td>"
+            ps += "<td>" + self._makep(f["format"]) + "</td>"
+            ps += "<td>" + self._makep(f["size"] + " KB") + "</td>"
+            ps += "<td>" + self._makep(f["preslev"]) + "</td>"
+            ps += "</tr>"
+        ps += "</table>"
+        return self._htmlwrap(ps)
+
     def _htmlwrap(self, middle, fontsize=12, font="Source Sans Pro"):
         return u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n" \
                "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n" \
                "p, li { white-space: pre-wrap; }\n" \
-               "</style></head><body style=\" font-family:'" + font + "'; font-size:" + str(
-            fontsize) + "pt; font-weight:400; font-style:normal;\">\n" + \
-               middle + \
-               "</body></html>"
+               "</style></head><body style=\" font-family:'" + font + "'; font-size:" + str(fontsize) + \
+               "pt; font-weight:400; font-style:normal;\">\n" + middle + "</body></html>"
 
+
+aipcreated = "Erstellt"
+AIP = "AIP"
+root = "Ursprungsrepräsentation"
+rep = "Repräsentation"
 
 windowTitle = "DIP Request Viewer"
 menuTitles = [u"DIP-Generierung", u"Was sind DIP-Profile?", u"Was sind Repr\u00e4sentationen?", u"Programm-Info"]

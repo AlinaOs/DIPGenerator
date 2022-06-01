@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import ast
+import gc
+
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
@@ -10,7 +13,8 @@ from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
                                QLayout, QMainWindow, QPushButton, QRadioButton,
                                QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
                                QStackedWidget, QStatusBar, QTextBrowser, QVBoxLayout,
-                               QWidget, QLineEdit, QToolButton, QStyle, QFileDialog, QButtonGroup)
+                               QWidget, QLineEdit, QToolButton, QStyle, QFileDialog, QButtonGroup, QAbstractScrollArea,
+                               QGridLayout)
 from rv import snippets
 from rv.snippets import UiTextProvider
 
@@ -95,6 +99,7 @@ class RvMainWindow(QMainWindow):
         self.rScrollAreaContents = None
         self.repLayoutV = None
         self.repsGroup = QButtonGroup()
+        self.repsGroup.setExclusive(False)
         self.repsDetGroup = QButtonGroup()
         self.repsDetGroup.setExclusive(False)
 
@@ -156,13 +161,26 @@ class RvMainWindow(QMainWindow):
 
         content = QWidget()
         content.setObjectName(u"content")
-        contentLayoutV = QVBoxLayout(content)
+        scrollLayout = QGridLayout(content)
+        scrollLayout.setObjectName(u"scrollLayout")
+        scrollArea = QScrollArea(content)
+        scrollArea.setObjectName(u"scrollArea")
+        scrollArea.setFrameShape(QFrame.NoFrame)
+        scrollArea.setFrameShadow(QFrame.Plain)
+        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scrollArea.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        scrollArea.setWidgetResizable(True)
+        self.scrollAreaContents = QWidget()
+        self.scrollAreaContents.setObjectName(u"scrollAreaContents")
+        self.scrollAreaContents.setGeometry(QRect(0, 0, 501, 552))
+        contentLayoutV = QVBoxLayout(self.scrollAreaContents)
         contentLayoutV.setObjectName(u"contentLayoutV")
 
-        self.infoGroup.setParent(content)
+        self.infoGroup.setParent(self.scrollAreaContents)
         # Create Step Header
         for i in range(1, 4):
-            stepFrame = QFrame(content)
+            stepFrame = QFrame(self.scrollAreaContents)
             stepFrame.setObjectName(u"step"+str(i)+"Frame")
             stepFrame.setMinimumSize(QSize(0, 20))
             stepFrame.setMaximumSize(QSize(16777215, 50))
@@ -226,18 +244,18 @@ class RvMainWindow(QMainWindow):
             self.stepHeaders.append(stepFrame)
 
             self.infoGroup.addButton(info)
-            self.infoGroup.setId(info, i)
+            self.infoGroup.setId(info, i-1)
 
         # Create Step 1 (file spinner)
-        self.spinnerGoBtn = QToolButton(content)
+        self.spinnerGoBtn = QToolButton(self.scrollAreaContents)
         self.spinnerGoBtn.setObjectName(u"fsgobtn")
         self.spinnerGoBtn.setMinimumSize(QSize(30, 30))
         self.spinnerGoBtn.setMaximumSize(QSize(30, 30))
         self.spinnerGoBtn.setIcon(icon_allpages)
         self.spinnerGoBtn.setIcon(icon_check)
 
-        self.aipFileSpinner = FileSpinner(content, "a")
-        self.vzeFileSpinner = FileSpinner(content, "v")
+        self.aipFileSpinner = FileSpinner(self.scrollAreaContents, "a")
+        self.vzeFileSpinner = FileSpinner(self.scrollAreaContents, "v")
 
         # Layout file spinners
         fileSpinnerLayoutH = QHBoxLayout()
@@ -250,40 +268,30 @@ class RvMainWindow(QMainWindow):
         fileSpinnerLayoutH.addWidget(self.spinnerGoBtn)
 
         # Create step 2 (profiles)
-        self.profilesLabel = QLabel(content)
+        self.profilesLabel = QLabel(self.scrollAreaContents)
         self.profilesLabel.setObjectName(u"profilesLabel")
         self.profilesLabel.setFont(font12)
         self.profilesLabel.setWordWrap(True)
 
-        self.pScrollArea = QScrollArea(content)
-        self.pScrollArea.setObjectName(u"scrollArea")
-        self.pScrollArea.setFrameShape(QFrame.NoFrame)
-        self.pScrollArea.setFrameShadow(QFrame.Plain)
-        self.pScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.pScrollArea.setWidgetResizable(True)
-        self.pScrollAreaContents = QWidget()
-        self.pScrollAreaContents.setObjectName(u"self.pScrollAreaContents")
-        self.pScrollAreaContents.setGeometry(QRect(0, -4, 497, 174))
-
-        self.profileGroup.setParent(self.pScrollAreaContents)
-        self.profDetGroup.setParent(self.pScrollAreaContents)
+        self.profileGroup.setParent(self.scrollAreaContents)
+        self.profDetGroup.setParent(self.scrollAreaContents)
 
         # Create profiles
         for i in range(self.pn):
-            pTitle = LabelButton(self.pScrollAreaContents)
+            pTitle = LabelButton(self.scrollAreaContents)
             pTitle.setObjectName(u"ptitle")
             pTitle.setMinimumSize(QSize(120, 18))
             pTitle.setMaximumSize(QSize(200, 100))
 
-            pRecom = QLabel(self.pScrollAreaContents)
+            pRecom = QLabel(self.scrollAreaContents)
             pRecom.setObjectName(u"p"+str(i)+"recom")
             pRecom.setFont(font12)
             pRecom.setAlignment(Qt.AlignCenter)
 
-            line1 = Line(self.pScrollAreaContents, max_=QSize(60, 16777215))
-            line2 = Line(self.pScrollAreaContents)
+            line1 = Line(self.scrollAreaContents, max_=QSize(60, 16777215))
+            line2 = Line(self.scrollAreaContents)
 
-            pDetail = DetailsButton(self.pScrollAreaContents)
+            pDetail = DetailsButton(self.scrollAreaContents)
             pDetail.setObjectName(u"p"+str(i)+"details")
 
             # Layout Header
@@ -315,7 +323,7 @@ class RvMainWindow(QMainWindow):
         self.profileTitles[1].setChecked(True)
 
         # Layout scroll area contents
-        verticalLayout_9 = QVBoxLayout(self.pScrollAreaContents)
+        verticalLayout_9 = QVBoxLayout()
         verticalLayout_9.setSpacing(10)
         verticalLayout_9.setObjectName(u"verticalLayout_9")
         verticalLayout_9.setContentsMargins(0, 0, 0, 0)
@@ -323,7 +331,6 @@ class RvMainWindow(QMainWindow):
         verticalLayout_9.addLayout(self.profiles[1])
         verticalLayout_9.addLayout(self.profiles[2])
         verticalLayout_9.addLayout(self.profiles[3])
-        self.pScrollArea.setWidget(self.pScrollAreaContents)
 
         # Layout step 2
         profilesLayout = QVBoxLayout()
@@ -331,33 +338,22 @@ class RvMainWindow(QMainWindow):
         profilesLayout.setObjectName(u"profilesLayout")
         profilesLayout.setContentsMargins(10, 10, 10, 20)
         profilesLayout.addWidget(self.profilesLabel)
-        profilesLayout.addWidget(self.pScrollArea)
+        profilesLayout.addLayout(verticalLayout_9)
 
         # Create step 3 (representations)
-        self.repsLabel = QLabel(content)
+        self.repsLabel = QLabel(self.scrollAreaContents)
         self.repsLabel.setObjectName(u"repsLabel")
         self.repsLabel.setFont(font12)
         self.repsLabel.setWordWrap(True)
 
-        self.rScrollArea = QScrollArea(content)
-        self.rScrollArea.setObjectName(u"repsScrollArea")
-        self.rScrollArea.setFrameShape(QFrame.NoFrame)
-        self.rScrollArea.setFrameShadow(QFrame.Plain)
-        self.rScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.rScrollArea.setWidgetResizable(True)
-        self.rScrollAreaContents = QWidget()
-        self.rScrollAreaContents.setObjectName(u"repsScrollAreaContents")
-        self.rScrollAreaContents.setGeometry(QRect(0, 0, 510, 135))
-        self.repLayoutV = QVBoxLayout(self.rScrollAreaContents)
+        self.repLayoutV = QVBoxLayout()
         self.repLayoutV.setSpacing(0)
         self.repLayoutV.setObjectName(u"repLayoutV")
         self.repLayoutV.setContentsMargins(0, 0, 0, 0)
         self.repLayoutV.setSpacing(10)
 
-        self.repsGroup.setParent(self.rScrollAreaContents)
-        self.repsDetGroup.setParent(self.rScrollAreaContents)
-
-        self.rScrollArea.setWidget(self.rScrollAreaContents)
+        self.repsGroup.setParent(self.scrollAreaContents)
+        self.repsDetGroup.setParent(self.scrollAreaContents)
 
         # Layout step 3
         repsLayout = QVBoxLayout()
@@ -365,7 +361,7 @@ class RvMainWindow(QMainWindow):
         repsLayout.setObjectName(u"repsLayout")
         repsLayout.setContentsMargins(10, 10, 10, 10)
         repsLayout.addWidget(self.repsLabel)
-        repsLayout.addWidget(self.rScrollArea)
+        repsLayout.addLayout(self.repLayoutV)
 
         # Layout all content items
         contentLayoutV.addWidget(self.stepHeaders[0])
@@ -375,10 +371,12 @@ class RvMainWindow(QMainWindow):
         contentLayoutV.addWidget(self.stepHeaders[2])
         contentLayoutV.addLayout(repsLayout)
         contentLayoutV.addItem(QSpacerItem(17, 34, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        scrollArea.setWidget(self.scrollAreaContents)
+        scrollLayout.addWidget(scrollArea, 0, 0, 1, 1)
 
         # Construct info page and stackedWidget
         page = QWidget()
-        page.setObjectName("info"+str(i+1))
+        page.setObjectName("info")
         self.infopage = QTextBrowser(page)
         self.infopage.setObjectName("infoTextBrowser"+str(i+1))
         self.infopage.setFont(font12)
@@ -583,22 +581,47 @@ class RvMainWindow(QMainWindow):
         self.repsDetGroup.addButton(aipdetails)
         self.repsDetGroup.setId(aipdetails, index_)
 
+    def closeAips(self):
+        for i in range(len(self.aipInfos)):
+            if not self.aipInfos[i]:
+                continue
+            tb = self.aipInfos[i]
+            self.aipInfos[i] = None
+            tb.close()
+
+        for r in self.aips:
+            header = r.children()[0]
+            for i in reversed(range(header.count())):
+                widget = header.itemAt(i).widget()
+                widget.close()
+            self.repLayoutV.removeItem(r)
+
+        self.aips = []
+        self.aipDetails = []
+        self.aipDescs = []
+        self.aipTitles = []
+        self.aipFormats = []
+
     def createitb(self, parent, layout, type_, index_, infotexts):
         info = InfoTextBrowser(parent)
-        info.setHtml(self.utp.constructProfileItb(infotexts))
         if type_ == "a":
+            info.setHtml(self.utp.constructRepItb(infotexts["date"], infotexts["files"]))
             self.aipInfos[index_] = info
         elif type_ == "p":
+            info.setHtml(self.utp.constructProfileItb(infotexts))
             self.profileInfos[index_] = info
         layout.addWidget(info)
 
-    def retranslateAips(self, titles, descs, formats):
+    def retranslateAips(self, formats):
         self.repsLabel.setText(QCoreApplication.translate("self", snippets.repLabel, None))
 
         for i in range(len(self.aips)):
-            self.aipTitles[i].setText(QCoreApplication.translate("self", titles, None))
-            self.aipDescs[i].setText(QCoreApplication.translate("self", descs, None))
-            self.aipFormats[i].setText(QCoreApplication.translate("self", formats, None))
+            self.aipTitles[i].setText(QCoreApplication.translate("self", snippets.AIP + " " + str(i), None))
+            if i == 0:
+                self.aipDescs[i].setText(QCoreApplication.translate("self", snippets.root, None))
+            else:
+                self.aipDescs[i].setText(QCoreApplication.translate("self", snippets.rep, None))
+            self.aipFormats[i].setText(QCoreApplication.translate("self", ", ".join(formats[i]), None))
             self.aipDetails[i].setText(QCoreApplication.translate("self", snippets.details, None))
 
     def retranslateProfiles(self, nos, titles, recoms, infos=None):
@@ -691,7 +714,7 @@ class FileSpinner:
         self.edit = QLineEdit(parent)
         self.edit.setObjectName(u"aipfs")
         self.edit.setClearButtonEnabled(True)
-        self.edit.textChanged.connect(self.checkclearing)
+        self.edit.textChanged.connect(self.update)
 
         self.btn = QToolButton(parent)
         self.btn.setObjectName(u"fsbtn")
@@ -709,9 +732,13 @@ class FileSpinner:
             self.btndir.setIcon(icon_directory)
             self.btndir.clicked.connect(self.getdirpath)
 
-    def checkclearing(self, text):
+    def update(self, text):
         if text == "":
             self.paths = None
+        elif str.startswith(text, "[") and str.endswith(text, "]"):
+            self.paths = ast.literal_eval(text)
+        else:
+            self.paths = text
 
     def getdirpath(self):
         self.getpath("dir")
