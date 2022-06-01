@@ -320,8 +320,6 @@ class RvMainWindow(QMainWindow):
             self.profDetGroup.addButton(pDetail)
             self.profDetGroup.setId(pDetail, i)
 
-        self.profileTitles[1].setChecked(True)
-
         # Layout scroll area contents
         verticalLayout_9 = QVBoxLayout()
         verticalLayout_9.setSpacing(10)
@@ -457,7 +455,6 @@ class RvMainWindow(QMainWindow):
         self.label.setIndent(1)
 
         self.btnViewer = OverviewRadioBtn(overviewFrame, "btnViewer")
-        self.btnViewer.setChecked(True)
         self.btnDownload = OverviewRadioBtn(overviewFrame, "btnDownload")
         self.btnBoth = OverviewRadioBtn(overviewFrame, "btnBoth")
 
@@ -637,6 +634,34 @@ class RvMainWindow(QMainWindow):
         self.infopage.setHtml(self.utp.constructItb(info))
         self.stackedWidget.setCurrentIndex(1)
 
+    def updateOvVzeTb(self, signature, title, aiptype, filetype, runtime, contains):
+        if aiptype == "FILE_COLLECTION":
+            aiptype = snippets.typecollection
+        elif aiptype == "EAkte":
+            aiptype = snippets.typeefile
+        if filetype:
+            type_ = filetype + " ("+aiptype+")"
+        else:
+            type_ = aiptype
+
+        if not signature:
+            signature = "?"
+
+        infos = [
+            signature,
+            title,
+            type_,
+            runtime,
+            contains
+        ]
+        self.ieTextBrowser.setHtml(self.utp.constructIeItb(infos))
+
+    def updateOvProTb(self, no, title):
+        self.profileTextBrowser.setHtml(self.utp.constructProfItb(no, title))
+
+    def updateOvRepTb(self, nos, aip=False):
+        self.repTextBrowser.setHtml(self.utp.constructOvRepItb(nos, aip))
+
     def retranslateBaseUi(self):
         self.setWindowTitle(QCoreApplication.translate("self", snippets.windowTitle, None))
 
@@ -662,9 +687,9 @@ class RvMainWindow(QMainWindow):
         self.spinnerGoBtn.setStatusTip(QCoreApplication.translate("self", snippets.spinnerTooltip[3], None))
 
         self.label_3.setText(QCoreApplication.translate("self", snippets.choice, None))
-        self.ieTextBrowser.setHtml(QCoreApplication.translate("self", snippets.overviewTexts[0], None))
-        self.profileTextBrowser.setHtml(QCoreApplication.translate("self", snippets.overviewTexts[1], None))
-        self.repTextBrowser.setHtml(QCoreApplication.translate("self", snippets.overviewTexts[2], None))
+        self.ieTextBrowser.setHtml(self.utp.constructIeItb())
+        self.profileTextBrowser.setHtml(self.utp.constructProfItb())
+        self.repTextBrowser.setHtml(self.utp.constructOvRepItb())
 
         self.label.setText(QCoreApplication.translate("self", snippets.deliv, None))
         self.btnViewer.setToolTip("")

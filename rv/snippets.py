@@ -17,15 +17,13 @@ class UiTextProvider:
             "Dateigröße",
             "Erhaltungslevel"
         ]
-
-    def _makep(self, text, margin=(0, 0, 0, 0), textindent=0, qtblockindent=0, fontweight=400, fontsize=12,
-              font="Source Sans Pro"):
-        return "<p style=\" margin-top:" + str(margin[0]) + "px; margin-bottom:" + str(margin[2]) + "px; margin-left:" + \
-               str(margin[3]) + "px; margin-right:" + str(margin[1]) + "px; -qt-block-indent:" + str(
-            qtblockindent) + "; " \
-                             "text-indent:" + str(textindent) + "px; font-size:" + str(
-            fontsize) + "pt; font-weight:" + str(fontweight) + "; font-family:"+font+"\">"\
-            + text + "</p>"
+        self.ieProps = [
+            "Signatur",
+            "Titel",
+            "Art",
+            "Laufzeit",
+            "Enthält"
+        ]
 
     def constructItb(self, info, fontsize=12, font="Source Sans Pro"):
         ps = self._makep(info["main"], margin=(4, 10, 2, 10), fontsize=16, fontweight=600)
@@ -67,6 +65,46 @@ class UiTextProvider:
         ps += "</table>"
         return self._htmlwrap(ps)
 
+    def constructIeItb(self, infos=None):
+        if not infos:
+            ps = self._makep(noIeTitle, fontstyle="italic")
+            return self._htmlwrap(ps)
+        ps = ""
+        for i in range(len(self.ieProps)):
+            ps += self._makep(self.ieProps[i] + ":", fontstyle="italic")
+            ps += self._makep(infos[i], margin=(0, 0, 0, 10))
+        return self._htmlwrap(ps)
+
+    def constructProfItb(self, no=None, title=None):
+        ps = self._makep(profTbTitle + ":", fontweight=600)
+        if no is not None:
+            ps += self._makep(str(no) + " ("+title+")", margin=(0, 0, 0, 10))
+        return self._htmlwrap(ps)
+
+    def constructOvRepItb(self, nos=None, aip=False):
+        ps = self._makep(repTbTitle + ":", fontweight=600)
+        if nos:
+            for i in range(len(nos)):
+                if i == 0:
+                    title = root
+                else:
+                    title = rep
+                ps += self._makep(str(nos[i]) + " (" + title + ")", margin=(0, 0, 0, 10))
+        elif aip:
+            ps += self._makep(noRepTitle, margin=(0, 0, 0, 10))
+        else:
+            ps += self._makep(noIeTitle, margin=(0, 0, 0, 10))
+        return self._htmlwrap(ps)
+
+    def _makep(self, text, margin=(0, 0, 0, 0), textindent=0, qtblockindent=0, fontweight=400, fontsize=12,
+               font="Source Sans Pro", fontstyle="normal"):
+        return "<p style=\" margin-top:" + str(margin[0]) + "px; margin-bottom:" + str(margin[2]) + "px; margin-left:" + \
+               str(margin[3]) + "px; margin-right:" + str(margin[1]) + "px; -qt-block-indent:" + str(
+            qtblockindent) + "; " \
+                             "text-indent:" + str(textindent) + "px; font-size:" + str(
+            fontsize) + "pt; font-weight:" + str(fontweight) + "; font-family:"+font+"; font-style:"+fontstyle+"\">"\
+            + text + "</p>"
+
     def _htmlwrap(self, middle, fontsize=12, font="Source Sans Pro"):
         return u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n" \
                "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n" \
@@ -74,11 +112,17 @@ class UiTextProvider:
                "</style></head><body style=\" font-family:'" + font + "'; font-size:" + str(fontsize) + \
                "pt; font-weight:400; font-style:normal;\">\n" + middle + "</body></html>"
 
+noIeTitle = "Noch kein Archivale gewählt!"
+noRepTitle = "Noch keine Repräsentation gewählt!"
+profTbTitle = "Profil"
+repTbTitle = "Repräsentationen"
 
 aipcreated = "Erstellt"
 AIP = "AIP"
-root = "Ursprungsrepräsentation"
+root = "Ursprung"
 rep = "Repräsentation"
+typecollection = "Dateisammlung"
+typeefile = "E-Akte"
 
 windowTitle = "DIP Request Viewer"
 menuTitles = [u"DIP-Generierung", u"Was sind DIP-Profile?", u"Was sind Repr\u00e4sentationen?", u"Programm-Info"]

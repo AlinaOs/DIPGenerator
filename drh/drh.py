@@ -157,6 +157,7 @@ class DIPRequestHandler:
 
         if vze is None:
             vzeinfo = a.getieinfo()
+            vzeinfo.update({"signature": None})
         else:
             pass  # Todo VZE
 

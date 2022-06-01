@@ -157,15 +157,15 @@ class AIP(AbstractIP):
 
         # Extract IE/non-technical information
         self._ieinfo.update({
-            "iename": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "title").text,
-            "iedesc": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "description").text,
-            "ieruntime":
+            "title": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "title").text,
+            "contains": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "description").text,
+            "runtime":
                 dipsarch.find("./" + ns + "intellectualEntity/" + ns + "date/" + ns + "dateStart").text[0:10] +
                 " - " +
                 dipsarch.find("./" + ns + "intellectualEntity/" + ns + "date/" + ns + "dateEnd").text[0:10]
             ,
             "aiptype": dipsarch.find("./" + ns + "AIP/" + ns + "Type").text,
-            "ietype": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "type").text
+            "type": dipsarch.find("./" + ns + "intellectualEntity/" + ns + "type").text
         })
 
     def save(self, path):

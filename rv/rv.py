@@ -17,13 +17,11 @@ class RequestViewer:
         self.delivery = "viewer"
         self.profile = 1
         self.output = None
+        self.pinfo = self.drh.getprofileinfo()
 
         self.app = QApplication(sys.argv)
         self.window = RvMainWindow(pn)
 
-        # for i in range(2): # Todo
-        #     self.window.createAIP(self.window.repLayoutV, self.window.rScrollAreaContents, i)
-        # self.window.aipTitles[0].setChecked(True)
         self.retranslateUi()
 
         self.mbtns = self.window.menuGroup
@@ -35,14 +33,15 @@ class RequestViewer:
         self.obtns = self.window.overviewGroup
 
         self.setclickhandlers()
+        # Todo: Set default profile and delivery type
+        self.window.profileTitles[1].click()
+        self.window.btnViewer.click()
         self.window.show()
         self.app.exec()
 
     def retranslateUi(self):
         self.window.retranslateBaseUi()
-        info = self.drh.getprofileinfo()
-        self.window.retranslateProfiles(info["nos"], info["names"], info["recoms"])
-        # self.window.retranslateAips()
+        self.window.retranslateProfiles(self.pinfo["nos"], self.pinfo["names"], self.pinfo["recoms"])
 
     def setclickhandlers(self):
         self.mbtns.buttonClicked.connect(self.navigate)
@@ -53,7 +52,7 @@ class RequestViewer:
 
         self.pbtns.buttonClicked.connect(self.setprofile)
         self.pdbtns.buttonToggled.connect(self.toggleitb_p)
-        self.rbtns.buttonToggled.connect(self.addaip)
+        self.rbtns.buttonToggled.connect(self.toggleaip)
         self.rdbtns.buttonToggled.connect(self.toggleitb_r)
 
         self.obtns.buttonClicked.connect(self.setdelivery)
@@ -95,20 +94,37 @@ class RequestViewer:
             self.window.createAIP(self.window.repLayoutV, self.window.scrollAreaContents, i)
             aipformats.append(list(self.aips[i]["formats"]))
         self.window.retranslateAips(aipformats)
+        self.setdefaultaips()
 
-        # Todo: Update overview with VZE info
+        # Update overview with VZE info
+        self.window.updateOvVzeTb(
+            info["vzeinfo"]["signature"],
+            info["vzeinfo"]["title"],
+            info["vzeinfo"]["aiptype"],
+            info["vzeinfo"]["type"],
+            info["vzeinfo"]["runtime"],
+            info["vzeinfo"]["contains"]
+        )
 
     def setprofile(self, btn):
         self.profile = self.pbtns.id(btn)
-        # Todo: Update overview
+        self.window.updateOvProTb(self.pinfo["nos"][self.profile], self.pinfo["names"][self.profile])
 
-    def addaip(self, btn, checked):
+        # Todo: Get and set standard AIP for chosen profile
+        if self.aips:
+            self.setdefaultaips()
+
+    def setdefaultaips(self):
+        self.window.aipTitles[len(self.aips)-1].setChecked(True)
+
+    def toggleaip(self, btn, checked):
         if checked:
             self.chosenaips.append(self.rbtns.id(btn))
+            self.chosenaips = sorted(self.chosenaips)
+            self.window.updateOvRepTb(self.chosenaips, True)
         else:
             self.chosenaips.remove(self.rbtns.id(btn))
-
-        # Todo: Update overview
+            self.window.updateOvRepTb(self.chosenaips, True)
 
     def setdelivery(self, btn):
         id_ = self.obtns.id(btn)
@@ -154,7 +170,6 @@ class RequestViewer:
                 id_,
                 self.aips[id_]
             )
-            # Todo: Get Info Texts from DRH and show them
         else:
             tb = self.window.aipInfos[id_]
             self.window.aipInfos[id_] = None
