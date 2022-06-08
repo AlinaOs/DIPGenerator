@@ -8,8 +8,6 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 import xml.etree.cElementTree as ET
 from lxml import etree
-
-import saxonpy
 from saxonpy import PySaxonProcessor
 
 
@@ -230,7 +228,7 @@ class AIP(AbstractIP):
 
 class DIP(AbstractIP):
 
-    def __init__(self, req, temp):
+    def __init__(self, req, temp, xsltproc):
         super().__init__(temp)
 
         self._conf = req["pconf"]
@@ -243,6 +241,7 @@ class DIP(AbstractIP):
         self._origAIPs = []
         self._aips = req["aips"]
 
+        self._xsltproc = xsltproc
         self._filterfiles(self._aips)
         self._transformmetadata()
         self._initsuccess = True
@@ -292,17 +291,11 @@ class DIP(AbstractIP):
             self._metadata = os.path.join(self._temp.name, self._ipid + ".xml")
 
             # Start transformation
-            with PySaxonProcessor(license=False) as proc:
-                proc.set_cwd(os.getcwd())
-                xsltproc = proc.new_xslt30_processor()
-                xsltproc.transform_to_file(
-                    source_file=os.path.join(temp.name, "dummy.xml"),
-                    output_file=self._metadata,
-                    stylesheet_file=os.path.join(temp.name, "xsl.xsl"))
-                print(xsltproc.get_error_message(0))
+            self._xsltproc.transform_to_file(
+                source_file=os.path.join(temp.name, "dummy.xml"),
+                output_file=self._metadata,
+                stylesheet_file=os.path.join(temp.name, "xsl.xsl"))
 
-            # Delete tempdir
-            temp.cleanup()
         except Exception as e:
             self._tb += "".join(traceback.format_exception(e, limit=10))
             self._initsuccess = False
@@ -337,7 +330,7 @@ class DIP(AbstractIP):
 
 class ViewDIP(AbstractIP):
 
-    def __init__(self, dip, conf, temp):
+    def __init__(self, dip, conf, temp, xsltproc):
         super().__init__(temp)
 
         self._ipid = dip.getid() + ".vdip-v" + "dev"
@@ -346,6 +339,7 @@ class ViewDIP(AbstractIP):
         self._files = dip.getfiles()
         self._origAIPs = dip.getorigaips()
 
+        self._xsltproc = xsltproc
         self._transformmetadata()
 
     def _transformmetadata(self):  # Todo: Implement transformation with saxon

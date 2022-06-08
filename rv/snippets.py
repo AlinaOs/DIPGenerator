@@ -1,3 +1,37 @@
+import os.path
+
+errors = {
+    "DrhError":
+        "Unbekannter Fehler",
+    "NoPathError":
+        "Sie müssen einen Pfad für die AIP-Dateien angeben, bevor Sie sie laden können!",
+    "PathError":
+        "Die Datei/der Ordner existiert nicht oder der Pfad ist ein falscher Typ (d.h., er führt zu "
+        "einem Ordner, obwohl er zu einer Datei führen sollte, oder er führt zu einer Datei, "
+        "obwohl er zu einem Ordner führen sollte).",
+    "PathExistsError":
+        "Das Programm konnte eine(n) notwendige(n) Datei/Pfad nicht erstellen, "
+        "da die Datei/der Pfad bereits existiert.",
+    "FormatError":
+        "Mindestens eine der eingereichten AIP-Dateien ist keine TAR-Datei.",
+    "AIPError":
+        "Mindestens eine der eingereichte AIP-Dateien konnte nicht gelesen werden, "
+        "da sie kein valides AIP darstellt.",
+    "IEError":
+        "Die eingereichten AIPs und der ausgewählte Archivsoftware-Export "
+        "repräsentieren nicht dieselbe Intellektuelle Einheit. Mindestens eine "
+        "der Dateien repräsentiert eine andere Einheit als die anderen."
+    ,
+    "IEUncompleteError":
+        "Es scheint, dass nicht alle AIPs für das gewünschte Archivale "
+        "eingereicht worden sind. Mindestens ein Parent-AIP wird genannt, "
+        "das nicht vorhanden ist."
+}
+
+impactedip = "Betroffenes Information Package"
+impactedfile= "Pfad der Datei"
+traceback_ = "Fehlermeldung"
+
 
 class UiTextProvider:
 
@@ -96,6 +130,30 @@ class UiTextProvider:
             ps += self._makep(noIeTitle, margin=(0, 0, 0, 10))
         return self._htmlwrap(ps)
 
+    def constructSuccessBrowser(self, details_):
+        ps = ""
+        for p in details_:
+            ps += self._makep("- " + os.path.normpath(p))
+        return self._htmlwrap(ps)
+
+    def constructErrorBrowser(self, errs):
+        ps = ""
+        for e in errs:
+            ename = e.__class__.__name__
+            ps += self._makep(ename + ":", fontweight=600)
+            if ename in errors:
+                ps += self._makep(errors[ename])
+                if e.getdetail():
+                    ps += self._makep(impactedfile + ": " + e.getdetail(), margin=(0, 0, 10, 0))
+            else:
+                ps += self._makep(impactedip + ": " + e.getdetail())
+                ps += self._makep(traceback_ + ": " + e.getdesc(), margin=(0, 0, 10, 0))
+        return self._htmlwrap(ps)
+
+    def wraptext(self, text):
+        ps = self._makep(text)
+        return self._htmlwrap(ps)
+
     def _makep(self, text, margin=(0, 0, 0, 0), textindent=0, qtblockindent=0, fontweight=400, fontsize=12,
                font="Source Sans Pro", fontstyle="normal"):
         return "<p style=\" margin-top:" + str(margin[0]) + "px; margin-bottom:" + str(margin[2]) + "px; margin-left:" + \
@@ -161,129 +219,68 @@ choice = "Ihre Auswahl"
 goStatus = u"DIP anfordern"
 go = "Los"
 
-aipInfos = [u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:20px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Dies ist ein Platzhaltertext - yeah.</p></body></html>"
-]
-
 profileTitles = [u"Profil " + str(i) for i in range(4)]
 profileRecom = [u"Empfohlen für...", u"Empfohlen für...", u"Empfohlen für...", u"Empfohlen für..."]
-profileInfos = [
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:20px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Dies ist ein Platzhaltertext - yeah.</p></body></html>",
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:20px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Dies ist ein Platzhaltertext - yeah.</p></body></html>",
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:20px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Dies ist ein Platzhaltertext - yeah.</p></body></html>",
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:20px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Dies ist ein Platzhaltertext - yeah.</p></body></html>"
+
+msgDefault = "Etwas ist schiefgelaufen!"
+msgDefaultInfo = "Keine Details verfügbar."
+msgTitle = [
+    [
+        "AIPs erfolgreich geladen!",
+        "DIP erfolgreich gespeichert!"
+    ],
+    [
+        "Mögliche Probleme beim Laden",
+        "Mögliche Probleme beim Laden oder Speichern",
+        "Alles richtig?"
+    ],
+    [
+        "TAR-Pakete konnten nicht geladen werden!",
+        "DIP konnte nicht gespeichert werden!",
+        "Fehlende Angaben!"
+    ],
+    [
+        msgDefault,
+        msgDefault,
+        msgDefault
     ]
-
-overviewTexts = [
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-style:italic;\">Signatur:</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:1; text-indent:0px;\">Lorem Ipsum</p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-style:italic;\">Titel:</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:1; text-indent:0px;\">Lorem Ipsum</p>\n"
-    "<p style=\" margin-top:0px; margin-bott"
-                            "om:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-style:italic;\">Laufzeit:</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:1; text-indent:0px;\">Lorem Ipsum</p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-style:italic;\">Enth\u00e4lt:</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:1; text-indent:0px;\">Lorem Ipsum</p></body></html>",
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">DIP-Profil</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:1; text-indent:0px;\">0 (Rohdaten)</p></body></html>",
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Repr\u00e4sentationen</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:1; text-indent:0px;\">1 (Ursprung)</p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:1; text-indent:0px;\">2 (Repr\u00e4sentation)</p></body></html>"
 ]
-
-infoTexts = [
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:4px; margin-bottom:2px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; font-weight:600;\">Maintitle</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</p>\n"
-    "<p style=\" margin-top:8px; margin-bottom:2px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:14pt;\">Subtitle</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:5px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:5px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</p>\n"
-    "<ol style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 1</li>\n"
-    "<li style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 2</li>\n"
-    "<li style=\" margin-top:0p"
-    "x; margin-bottom:12px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 3</li></ol>\n"
-    "<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 1</li>\n"
-    "<li style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 2</li>\n"
-    "<li style=\" margin-top:0px; margin-bottom:12px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 3</li></ul>\n"
-    "<table border=\"0\" style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px;\" cellspacing=\"2\" cellpadding=\"0\">\n"
-    "<tr>\n"
-    "<td>\n"
-    "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'MS Shell Dlg 2'; font-size:8pt"
-    "; font-weight:600;\">Test</span></p></td>\n"
-    "<td>\n"
-    "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;\">Test2</span></p></td></tr>\n"
-    "<tr>\n"
-    "<td></td>\n"
-    "<td>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'MS Shell Dlg 2'; font-size:8pt;\">Test4</span></p></td></tr></table></body></html>",
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:4px; margin-bottom:2px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Source Sans Pro'; font-size:16pt; font-weight:600;\">Maintitle</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Source Sans Pro'; font-size:12pt;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</span></p>\n"
-    "<p style=\" margin-top:8px; margin-bottom:2px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Source Sans Pro'; font-size:14pt;\">Su"
-    "btitle</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Source Sans Pro'; font-size:12pt;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:5px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Source Sans Pro'; font-size:12pt;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:5px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Source Sans Pro'; font-size:12pt;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</span></p>\n"
-    "<ol style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-rig"
-    "ht: 0px; -qt-list-indent: 1;\"><li style=\" font-family:'Source Sans Pro'; font-size:12pt;\" style=\" margin-top:12px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 1</li>\n"
-    "<li style=\" font-family:'Source Sans Pro'; font-size:12pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 2</li>\n"
-    "<li style=\" font-family:'Source Sans Pro'; font-size:12pt;\" style=\" margin-top:0px; margin-bottom:12px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 3</li></ol></body></html>",
-    u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-    "p, li { white-space: pre-wrap; }\n"
-    "</style></head><body style=\" font-family:'Source Sans Pro'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-    "<p style=\" margin-top:4px; margin-bottom:2px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; font-weight:600;\">Maintitle</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</p>\n"
-    "<p style=\" margin-top:8px; margin-bottom:2px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:14pt;\">Subtitle</span></p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-"
-    "indent:0px;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:5px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</p>\n"
-    "<p style=\" margin-top:0px; margin-bottom:5px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet Text Lorem Ipsum dolor sit amet</p>\n"
-    "<ol style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 1</li>\n"
-    "<li style=\" margin-top:0px; margin-bottom:0px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 2</li>\n"
-    "<li style=\" margin-top:0p"
-"x; margin-bottom:12px; margin-left:10px; margin-right:10px; -qt-block-indent:0; text-indent:0px;\">Element 3</li></ol></body></html>"
+msgInfo = [
+    [
+        "",
+        "Speicherort(e) siehe Details."
+    ],
+    [
+        "Die AIP-Dateien konnten erfolgreich eingelesen werden, doch es wurde ein mögliches " \
+        "Problem erkannt. Überprüfen " \
+        "Sie ggf. anhand der Details, ob die gemeldeten Probleme relevant sind.",
+        "Das DIP konnte erfolgreich gespeichert werden, doch bei der Erstellung " \
+        "des DIP oder dem Einlesen der AIP-Dateien wurde ein mögliches Problem " \
+        "erkannt. Überprüfen Sie ggf. anhand der Details, ob die " \
+        "gemeldeten Probleme relevant sind. Falls ja, beheben Sie die Probleme und laden "
+        "Sie die AIP-Dateien erneut.",
+        "Sie haben einen neuen AIP-Pfad eingegeben, aber noch nicht geladen. "
+        "Möglicherweise werden Ihnen noch die alten, unerwünschten AIPs angezeigt?<br>"
+        '<br>Klicken Sie "Ok", wenn mit der DIP-Generierung trotzdem fortgefahren werden soll.<br>'
+        "<br>Wenn Sie die eingegebenen Dateipfade zum Generieren der DIPs nutzen wollen, klicken "
+        'Sie "Abbrechen" und bestätigen Sie zunächst die AIP-Eingabe.'
+    ],
+    [
+        "Siehe die Details für mehr Infos.",
+        "Siehe Details für mehr Infos.",
+        "Mindestens eine notwendige Angabe fehlt! Bitte"
+        "<ol><li>geben Sie AIP-Dateien oder einen Ordner mit AIP-Dateien ein (und bestätigen diese Auswahl)</li>"
+        "<li>wählen Sie einen Speicherort für die fertigen DIP-Dateien</li></ol>"
+    ],
+    [
+        msgDefaultInfo,
+        msgDefaultInfo
+    ]
 ]
-
-
-aipTitles = [u"AIP " + str(i) for i in range(4)]
-aipFormats = [u"PDF", u"Format", u"txt", u"word"]
-aipDescs = [u"Ursprung", u"Repräsentation"]
+msgWindow = [
+    "Info",
+    "Hinweis",
+    "Fehler",
+    "Fehler"
+]
+msgdet = "Details"

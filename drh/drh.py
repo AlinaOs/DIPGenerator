@@ -6,6 +6,8 @@ import tempfile
 import traceback
 from abc import ABC, abstractmethod
 
+from saxonc import PySaxonProcessor
+
 from drh.err import *
 from drh.ip import AIP, DIP, ViewDIP
 
@@ -19,9 +21,12 @@ class DIPRequestHandler:
         self._info = self._loadinfo()
         self._tempdir = tempfile.TemporaryDirectory()
         self._aips = {}
+        self._proc = PySaxonProcessor(license=False)
+        self._proc.set_cwd(os.getcwd())
+        self._xsltproc = self._proc.new_xslt30_processor()
 
     def _loadconf(self, dir_, conf):
-        with open(os.path.join(dir_ + conf), "r") as confile:
+        with open(os.path.join(dir_, conf), "r") as confile:
             jsonconf = json.load(confile)
         return jsonconf
 
@@ -29,14 +34,14 @@ class DIPRequestHandler:
         descs = {}
         for profile in self._conf["profileConfigs"]:
             path = self._conf["profileConfigs"][profile]["desc"]
-            with open(os.path.join(self._confdir + path), "r", encoding="UTF-8") as desc:
+            with open(os.path.join(self._confdir, path), "r", encoding="UTF-8") as desc:
                 jsondesc = json.load(desc)
                 descs.update({profile: jsondesc})
         return descs
 
     def _loadinfo(self):
         path = self._conf["info"]
-        with open(os.path.join(self._confdir + path), "r", encoding="utf-8") as info:
+        with open(os.path.join(self._confdir, path), "r", encoding="utf-8") as info:
             jsoninfo = json.load(info)
         return jsoninfo
 
@@ -67,13 +72,12 @@ class DIPRequestHandler:
             resp.newsuccess(detail=path, ip="AIP", type_="save")
             return resp
 
-        pconf = self._conf["profileConfigs"]["profile" + str(uchoices["profileNo"])]
-        pconf.update({"xsl": os.path.join(self._confdir + pconf["xsl"])})
-        pconf.update({"xsd": os.path.join(self._confdir + pconf["xsd"])})
+        pconf = dict(self._conf["profileConfigs"]["profile" + str(uchoices["profileNo"])])
+        pconf.update({"xsl": os.path.join(self._confdir, pconf["xsl"])})
+        pconf.update({"xsd": os.path.join(self._confdir, pconf["xsd"])})
         pconf.update({"generatorName": self._conf["generatorName"]})
         pconf.update({"generatorVersion": self._conf["generatorVersion"]})
         pconf.update({"issuedBy": self._conf["issuedBy"]})
-        print(pconf)
         req = {
             "aips": aips,
             "pconf": pconf,
@@ -81,7 +85,7 @@ class DIPRequestHandler:
         }
 
         # Create DIP and, if user chose download as delivery type, save it
-        dip = DIP(req, self._tempdir)
+        dip = DIP(req, self._tempdir, self._xsltproc)
         if not dip.initsuccess():
             resp.newerror(ParsingError(dip.getid(), dip.gettb()))
             return resp
@@ -95,7 +99,7 @@ class DIPRequestHandler:
 
         # If user chose Viewer as delivery type, create ViewDIP
         if uchoices["deliveryType"] != "download":
-            vdip = ViewDIP(dip, self.vconf, self._tempdir)
+            vdip = ViewDIP(dip, self.vconf, self._tempdir, self._xsltproc)
             if not vdip.initsuccess():
                 resp.newerror(ParsingError(vdip.getid(), vdip.gettb()))
                 return resp
@@ -134,6 +138,12 @@ class DIPRequestHandler:
     def deliverychoice(self, no):
         return self._conf["profileConfigs"]["profile" + str(no)]["deliveryChoice"]
 
+    def getdeliverymessage(self, no):
+        return self._descs["profile"+str(no)]["deliveryInfo"]
+
+    def getaipmessage(self, no):
+        return self._descs["profile"+str(no)]["repInfo"]
+
     def aipchoice(self, no):
         return self._conf["profileConfigs"]["profile" + str(no)]["AIPChoice"]
 
@@ -141,7 +151,7 @@ class DIPRequestHandler:
         resp = InfoResponse()
         aips, errors = self._parseaip(paths, vze=vze)
         resp.newerror(errors)
-        if any(e.isfatal() for e in errors):
+        if any(e.isfatal() for e in errors) or not aips:
             return resp
 
         aipinfo = []
@@ -170,8 +180,9 @@ class DIPRequestHandler:
             aip.update({"files": files})
             aipinfo.append(aip)
 
+        vzeinfo = None
         if vze is None:
-            vzeinfo = a.getieinfo()
+            vzeinfo = aips[0].getieinfo()
             vzeinfo.update({"signature": None})
         else:
             pass  # Todo VZE
@@ -259,6 +270,7 @@ class DIPRequestHandler:
 
     def prepare_exit(self):
         self._tempdir.cleanup()
+        self._proc.release()
 
 
 class AbstractDrhResponse(ABC):
@@ -270,13 +282,9 @@ class AbstractDrhResponse(ABC):
 
     def newerror(self, errors):
         if not isinstance(errors, list):
-            errors = [errors]
-        for e in errors:
-            self._errors.append({
-                "type": e.__class__.__name__,
-                "message": e.getdesc(),
-                "detail": e.getdetail()
-            })
+            self._errors = [errors]
+        else:
+            self._errors.extend(errors)
 
     def getfullresponse(self):
         return {
@@ -302,6 +310,9 @@ class InfoResponse(AbstractDrhResponse):
 
     def getinfo(self):
         return self._success
+
+    def geterrors(self):
+        return self._errors
 
 
 class DrhResponse(AbstractDrhResponse):

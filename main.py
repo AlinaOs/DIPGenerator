@@ -86,7 +86,12 @@ uc3 = {
 #
 # req1 = drh.startrequest(uc3)
 # print()
-# print("Request 3:")
+# print("Request 3.1:")
 # req1.printresponse()
+# #
+# req2 = drh.startrequest(uc3)
+# print()
+# print("Request 3.2:")
+# req2.printresponse()
 
 rv = RequestViewer(drh)

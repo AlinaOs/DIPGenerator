@@ -14,6 +14,12 @@ class DrhError:
         return self._fatal
 
 
+class NoPathError(DrhError):
+    def __init__(self, detail, fatal=True):
+        super().__init__(detail, fatal)
+        self._desc = "No path supplied!"
+
+
 class PathError(DrhError):
     def __init__(self, detail, fatal=False):
         super().__init__(detail, fatal)

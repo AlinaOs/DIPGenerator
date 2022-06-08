@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 import ast
 import gc
+import os.path
+from enum import Enum
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
+                            QMetaObject, QObject, QPoint, QRect,
+                            QSize, QTime, QUrl, Qt)
 from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
+                           QFont, QFontDatabase, QGradient, QIcon,
+                           QImage, QKeySequence, QLinearGradient, QPainter,
+                           QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
                                QLayout, QMainWindow, QPushButton, QRadioButton,
                                QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
                                QStackedWidget, QStatusBar, QTextBrowser, QVBoxLayout,
                                QWidget, QLineEdit, QToolButton, QStyle, QFileDialog, QButtonGroup, QAbstractScrollArea,
-                               QGridLayout)
+                               QGridLayout, QMessageBox, QDialog, QDialogButtonBox)
 from rv import snippets
 from rv.snippets import UiTextProvider
 
@@ -41,19 +43,26 @@ font16 = QFont()
 font16.setFamilies(["Source Sans Pro"])
 font16.setPointSize(16)
 
-icon_allpages = QIcon()
-icon_allpages.addFile("svg/LWL_Alle_Seiten_sehen.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_DIP = QIcon()  # https://www.iconshock.com/freeicons/package-16
+icon_DIP.addFile("svg/Package.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_info = QIcon()
 icon_info.addFile("svg/LWL_mehr_Infos.svg", QSize(), QIcon.Normal, QIcon.Off)
-icon_check = QIcon() # https://www.iconshock.com/freeicons/check-circle-fill-24
-icon_check.addFile("svg/Check.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_check_url = "svg/Check.svg"
+icon_check = QIcon()  # https://www.iconshock.com/freeicons/check-circle-fill-24
+icon_check.addFile(icon_check_url, QSize(), QIcon.Normal, QIcon.Off)
+icon_check_pm = None
 icon_link = QIcon()
 icon_link.addFile("svg/LWL_Link.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_directory = QIcon()
 icon_directory.addFile("svg/Directory.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_file = QIcon()
 icon_file.addFile("svg/LWL_Dokument.svg", QSize(), QIcon.Normal, QIcon.Off)
-
+icon_problem_url = "svg/LWL_Fehler_melden.svg"
+icon_problem = QIcon()
+icon_problem.addFile(icon_problem_url, QSize(), QIcon.Normal, QIcon.Off)
+icon_problem_red_url = "svg/LWL_Fehler_melden_rot.svg"
+icon_problem_red = QIcon()
+icon_problem_red.addFile(icon_problem_red_url, QSize(), QIcon.Normal, QIcon.Off)
 
 class RvMainWindow(QMainWindow):
     def __init__(self, pn):
@@ -106,6 +115,7 @@ class RvMainWindow(QMainWindow):
         self.overviewGroup = QButtonGroup()
         self.outFileSpinner = None
 
+        self.setWindowIcon(icon_DIP)
         self.setupUi()
 
     def setupUi(self):
@@ -182,43 +192,43 @@ class RvMainWindow(QMainWindow):
         # Create Step Header
         for i in range(1, 4):
             stepFrame = QFrame(self.scrollAreaContents)
-            stepFrame.setObjectName(u"step"+str(i)+"Frame")
+            stepFrame.setObjectName(u"step" + str(i) + "Frame")
             stepFrame.setMinimumSize(QSize(0, 20))
             stepFrame.setMaximumSize(QSize(16777215, 50))
-            stepFrame.setStyleSheet(u".QFrame{\n"\
-                                    "    border: 1px solid "+lwl_darkblue+";\n"\
-                                    "    border-radius: 5px;\n"\
-                                    "}")
+            stepFrame.setStyleSheet(u".QFrame{\n" \
+                                    "    border: 1px solid " + lwl_darkblue + ";\n" \
+                                                                              "    border-radius: 5px;\n" \
+                                                                              "}")
             stepFrame.setFrameShape(QFrame.Box)
             stepFrame.setFrameShadow(QFrame.Plain)
             stepFrame.setLineWidth(2)
 
             step = QLabel(stepFrame)
-            step.setObjectName(u"step"+str(i)+"step")
+            step.setObjectName(u"step" + str(i) + "step")
             step.setMinimumSize(QSize(70, 0))
             step.setMaximumSize(QSize(100, 16777215))
             step.setFont(font14)
             step.setAutoFillBackground(False)
             step.setStyleSheet(u".QLabel{\n"
-                               "    border-radius: 5px;\n"\
-                               "    background-color: "+lwl_darkblue+";\n"\
-                               "    padding: 1px 10px;\n"\
-                               "    color: #ffffff;\n"\
-                               "}")
+                               "    border-radius: 5px;\n" \
+                               "    background-color: " + lwl_darkblue + ";\n" \
+                                                                         "    padding: 1px 10px;\n" \
+                                                                         "    color: #ffffff;\n" \
+                                                                         "}")
             step.setAlignment(Qt.AlignCenter)
 
             title = QLabel(stepFrame)
-            title.setObjectName(u"step"+str(i)+"title")
+            title.setObjectName(u"step" + str(i) + "title")
             title.setFont(font16)
             title.setToolTipDuration(-1)
-            title.setStyleSheet(u".QLabel{\n"\
-                                "    color: "+lwl_darkblue+";\n"\
-                                "    padding-top: 1px;\n"\
-                                "    padding-bottom: 1px;\n"\
-                                "}")
+            title.setStyleSheet(u".QLabel{\n" \
+                                "    color: " + lwl_darkblue + ";\n" \
+                                                               "    padding-top: 1px;\n" \
+                                                               "    padding-bottom: 1px;\n" \
+                                                               "}")
 
             info = QPushButton(stepFrame)
-            info.setObjectName(u"step"+str(i)+"info")
+            info.setObjectName(u"step" + str(i) + "info")
             info.setMinimumSize(QSize(20, 0))
             info.setMaximumSize(QSize(30, 16777215))
             info.setCursor(QCursor(Qt.PointingHandCursor))
@@ -245,15 +255,10 @@ class RvMainWindow(QMainWindow):
             self.stepHeaders.append(stepFrame)
 
             self.infoGroup.addButton(info)
-            self.infoGroup.setId(info, i-1)
+            self.infoGroup.setId(info, i - 1)
 
         # Create Step 1 (file spinner)
-        self.spinnerGoBtn = QToolButton(self.scrollAreaContents)
-        self.spinnerGoBtn.setObjectName(u"fsgobtn")
-        self.spinnerGoBtn.setMinimumSize(QSize(30, 30))
-        self.spinnerGoBtn.setMaximumSize(QSize(30, 30))
-        self.spinnerGoBtn.setIcon(icon_allpages)
-        self.spinnerGoBtn.setIcon(icon_check)
+        self.spinnerGoBtn = SpinnerToolButton(self.scrollAreaContents, icon_check)
 
         self.aipFileSpinner = FileSpinner(self.scrollAreaContents, "a")
         self.vzeFileSpinner = FileSpinner(self.scrollAreaContents, "v")
@@ -285,7 +290,7 @@ class RvMainWindow(QMainWindow):
             pTitle.setMaximumSize(QSize(200, 100))
 
             pRecom = QLabel(self.scrollAreaContents)
-            pRecom.setObjectName(u"p"+str(i)+"recom")
+            pRecom.setObjectName(u"p" + str(i) + "recom")
             pRecom.setFont(font12)
             pRecom.setAlignment(Qt.AlignCenter)
 
@@ -293,7 +298,7 @@ class RvMainWindow(QMainWindow):
             line2 = Line(self.scrollAreaContents)
 
             pDetail = DetailsButton(self.scrollAreaContents)
-            pDetail.setObjectName(u"p"+str(i)+"details")
+            pDetail.setObjectName(u"p" + str(i) + "details")
 
             # Layout Header
             pHeaderLayout = QHBoxLayout()
@@ -306,7 +311,7 @@ class RvMainWindow(QMainWindow):
 
             # Layout profile
             pLayout = QVBoxLayout()
-            pLayout.setObjectName(u"p"+str(i)+"Layout")
+            pLayout.setObjectName(u"p" + str(i) + "Layout")
             pLayout.addLayout(pHeaderLayout)
             self.profileInfos.append(None)
             pLayout.setStretch(1, 1)
@@ -377,7 +382,7 @@ class RvMainWindow(QMainWindow):
         page = QWidget()
         page.setObjectName("info")
         self.infopage = QTextBrowser(page)
-        self.infopage.setObjectName("infoTextBrowser"+str(i+1))
+        self.infopage.setObjectName("infoTextBrowser" + str(i + 1))
         self.infopage.setFont(font12)
         self.infopage.setTextInteractionFlags(
             Qt.LinksAccessibleByKeyboard |
@@ -411,12 +416,12 @@ class RvMainWindow(QMainWindow):
         overviewFrame.setMinimumSize(QSize(160, 0))
         overviewFrame.setMaximumSize(QSize(250, 16777215))
         overviewFrame.setStyleSheet(u"QFrame{\n"
-                                        "    border-radius: 0;\n"
-                                        "    border: 1px solid "+lwl_darkred+"\n"
-                                        "}")
+                                    "    border-radius: 0;\n"
+                                    "    border: 1px solid " + lwl_darkred + "\n"
+                                                                             "}")
         overviewFrame.setFrameShape(QFrame.StyledPanel)
         overviewFrame.setFrameShadow(QFrame.Raised)
-        
+
         # Title
         self.ovTitle = QWidget(overviewFrame)
         self.ovTitle.setObjectName(u"ovTitle")
@@ -428,11 +433,11 @@ class RvMainWindow(QMainWindow):
         self.label_3.setFont(font16)
         self.label_3.setAutoFillBackground(False)
         self.label_3.setStyleSheet(u".QLabel{\n"
-                                    "    border-radius: 5px;\n"
-                                    "    border: none;\n"
-                                    "    background-color: "+lwl_darkblue+";\n"
-                                    "    color: #ffffff\n"
-                                    "}")
+                                   "    border-radius: 5px;\n"
+                                   "    border: none;\n"
+                                   "    background-color: " + lwl_darkblue + ";\n"
+                                                                             "    color: #ffffff\n"
+                                                                             "}")
         self.label_3.setAlignment(Qt.AlignCenter)
         self.horizontalLayout = QHBoxLayout(self.ovTitle)
         self.horizontalLayout.setSpacing(0)
@@ -528,8 +533,9 @@ class RvMainWindow(QMainWindow):
         statusbar = QStatusBar(self)
         statusbar.setObjectName(u"statusbar")
         statusbar.setEnabled(True)
-        statusbar.setStyleSheet("QStatusBar{background-color: "+lwl_lightgray+"}")
+        statusbar.setStyleSheet("QStatusBar{background-color: " + lwl_lightgray + "}")
         self.setStatusBar(statusbar)
+
     # setupUi
 
     def createAIP(self, vl, parent, index_):
@@ -542,11 +548,13 @@ class RvMainWindow(QMainWindow):
         aipname.setObjectName(u"aipname")
         aipname.setFont(font12)
         aipname.setAlignment(Qt.AlignCenter)
+        aipname.setStyleSheet("QLabel:inactive{font: "+lwl_middlegray+"}")
 
         aipformats = QLabel(parent)
         aipformats.setObjectName(u"aipformats")
         aipformats.setFont(font12)
         aipformats.setAlignment(Qt.AlignCenter)
+        aipformats.setStyleSheet("QLabel:inactive{font: " + lwl_middlegray + "}")
 
         line1 = Line(parent, max_=QSize(30, 16777215))
         line2 = Line(parent)
@@ -567,7 +575,7 @@ class RvMainWindow(QMainWindow):
         aipHeaderLayout.addWidget(aipdetails)
         aipHeaderLayout.setSpacing(10)
 
-        #Layout AIP
+        # Layout AIP
         aipLayout = QVBoxLayout()
         aipLayout.setSpacing(10)
         aipLayout.setObjectName(u"aipLayout")
@@ -608,6 +616,19 @@ class RvMainWindow(QMainWindow):
         self.aipTitles = []
         self.aipFormats = []
 
+    def setAIPenabled(self, enabled, aiplayout, label=None):
+        header = aiplayout.children()[0]
+        if enabled:
+            for i in range(header.count()):
+                header.itemAt(i).widget().setEnabled(True)
+        else:
+            for i in range(header.count()):
+                header.itemAt(i).widget().setEnabled(False)
+        if label:
+            self.repsLabel.setText(label)
+        else:
+            self.repsLabel.setText(snippets.repLabel)
+
     def createitb(self, parent, layout, type_, index_, infotexts):
         info = InfoTextBrowser(parent)
         if type_ == "a":
@@ -619,8 +640,6 @@ class RvMainWindow(QMainWindow):
         layout.addWidget(info)
 
     def retranslateAips(self, formats):
-        self.repsLabel.setText(QCoreApplication.translate("self", snippets.repLabel, None))
-
         for i in range(len(self.aips)):
             self.aipTitles[i].setText(QCoreApplication.translate("self", snippets.AIP + " " + str(i), None))
             if i == 0:
@@ -630,7 +649,7 @@ class RvMainWindow(QMainWindow):
             self.aipFormats[i].setText(QCoreApplication.translate("self", ", ".join(formats[i]), None))
             self.aipDetails[i].setText(QCoreApplication.translate("self", snippets.details, None))
 
-    def retranslateProfiles(self, nos, titles, recoms, infos=None):
+    def retranslateProfiles(self, nos, titles, recoms):
         self.profilesLabel.setText(QCoreApplication.translate("self", snippets.profLabel, None))
 
         for i in range(self.pn):
@@ -649,7 +668,7 @@ class RvMainWindow(QMainWindow):
         elif aiptype == "EAkte":
             aiptype = snippets.typeefile
         if filetype:
-            type_ = filetype + " ("+aiptype+")"
+            type_ = filetype + " (" + aiptype + ")"
         else:
             type_ = aiptype
 
@@ -671,6 +690,38 @@ class RvMainWindow(QMainWindow):
     def updateOvRepTb(self, nos, aip=False):
         self.repTextBrowser.setHtml(self.utp.constructOvRepItb(nos, aip))
 
+    def createSuccessMsg(self, output):
+        msg = QMessageBox(self)
+        msg.setWindowIcon(icon_check)
+        msg.setSizeGripEnabled(True)
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText(snippets.msgFinalSuccess)
+        msg.setWindowTitle(snippets.msgWindowInfo)
+        it = snippets.infoFinalSuccess + ": "
+        for o in output:
+            o = os.path.normpath(o)
+            it += "\n"+o
+        msg.setInformativeText(it)
+        msg.exec()
+
+    def createErrorMsg(self, type_: int = 8):
+        msg = QMessageBox(self)
+        msg.setWindowTitle(snippets.msgWindowError)
+        msg.setSizeGripEnabled(True)
+        msg.setWindowIcon(icon_problem_red)
+        msg.setIcon(QMessageBox.Icon.Critical)
+
+        if type_ == 0:
+            msg.setText(snippets.msgLoadError)
+            msg.setInformativeText(snippets.infoLoadError)
+        elif type_ == 1:
+            msg.setText(snippets.msgFinalError)
+            msg.setInformativeText(snippets.infoFinalError)
+        else:
+            msg.setText(snippets.msgDefaultError)
+
+        msg.exec()
+
     def retranslateBaseUi(self):
         self.setWindowTitle(QCoreApplication.translate("self", snippets.windowTitle, None))
 
@@ -680,10 +731,8 @@ class RvMainWindow(QMainWindow):
 
         for i in range(3):
             self.stepTitles[i].setText(QCoreApplication.translate("self", snippets.stepTitles[i], None))
-            self.steps[i].setText(QCoreApplication.translate("self", snippets.step + " " + str(i+1), None))
+            self.steps[i].setText(QCoreApplication.translate("self", snippets.step + " " + str(i + 1), None))
             self.stepInfos[i].setToolTip(QCoreApplication.translate("self", snippets.help, None))
-
-        self.infopage.setHtml(QCoreApplication.translate("self", snippets.infoTexts[0], None))
 
         self.aipFileSpinner.setPlaceholderText(QCoreApplication.translate("self", snippets.spinnerPh[0], None))
         self.vzeFileSpinner.setPlaceholderText(QCoreApplication.translate("self", snippets.spinnerPh[1], None))
@@ -694,6 +743,8 @@ class RvMainWindow(QMainWindow):
         self.vzeFileSpinner.setToolTip(QCoreApplication.translate("self", snippets.spinnerTooltip[2], None))
         self.spinnerGoBtn.setToolTip(QCoreApplication.translate("self", snippets.spinnerTooltip[3], None))
         self.spinnerGoBtn.setStatusTip(QCoreApplication.translate("self", snippets.spinnerTooltip[3], None))
+
+        self.repsLabel.setText(QCoreApplication.translate("self", snippets.repLabel, None))
 
         self.label_3.setText(QCoreApplication.translate("self", snippets.choice, None))
         self.ieTextBrowser.setHtml(self.utp.constructIeItb())
@@ -724,19 +775,19 @@ class MenuButton(QPushButton):
         self.setCursor(QCursor(Qt.PointingHandCursor))
         self.setAutoFillBackground(False)
         self.setStyleSheet(u"QPushButton{\n" \
-                        "    background-color: " + lwl_darkblue + ";\n" \
-                        "    border: 1px solid " + lwl_darkblue + ";\n" \
-                        "    color: #ffffff;\n" \
-                        "}\n" \
-                        "\n" \
-                        "QPushButton:hover{\n" \
-                        "    background-color: " + lwl_darkred + "\n" \
-                        "}\n" \
-                        "\n" \
-                        "QPushButton:checked{\n" \
-                        "    background-color: " + lwl_darkred + ";\n" \
-                        "    border: 1px solid " + lwl_darkred + "\n" \
-                        "}")
+                           "    background-color: " + lwl_darkblue + ";\n" \
+                            "    border: 1px solid " + lwl_darkblue + ";\n" \
+                            "    color: #ffffff;\n" \
+                            "}\n" \
+                            "\n" \
+                            "QPushButton:hover{\n" \
+                            "    background-color: " + lwl_darkred + "\n" \
+                            "}\n" \
+                            "\n" \
+                            "QPushButton:checked{\n" \
+                            "    background-color: " + lwl_darkred + ";\n" \
+                            "    border: 1px solid " + lwl_darkred + "\n" \
+                    "}")
         self.setCheckable(True)
         self.setChecked(checked)
         self.setFlat(False)
@@ -745,6 +796,7 @@ class MenuButton(QPushButton):
 class FileSpinner:
     def __init__(self, parent, type_):
         self.type_ = type_
+        self.highlighted = False
         self.paths = None
 
         self.edit = QLineEdit(parent)
@@ -756,29 +808,25 @@ class FileSpinner:
 
         self.btn = None
         if type_ != "o":
-            self.btn = QToolButton(parent)
-            self.btn.setObjectName(u"fsbtn")
-            self.btn.setMinimumSize(QSize(30, 30))
-            self.btn.setMaximumSize(QSize(30, 30))
-            self.btn.setIcon(icon_file)
+            self.btn = SpinnerToolButton(parent, icon_file)
             self.btn.clicked.connect(self.getpath)
 
         self.btndir = None
         if type_ != "v":
-            self.btndir = QToolButton(parent)
-            self.btndir.setObjectName(u"fsdbtn")
-            self.btndir.setMinimumSize(QSize(30, 30))
-            self.btndir.setMaximumSize(QSize(30, 30))
-            self.btndir.setIcon(icon_directory)
+            self.btndir = SpinnerToolButton(parent, icon_directory)
             self.btndir.clicked.connect(self.getdirpath)
 
     def update(self, text):
         if text == "":
             self.paths = None
+            if self.highlighted:
+                self.edit.setStyleSheet("border: 2px solid " + lwl_darkred + ";")
         elif str.startswith(text, "[") and str.endswith(text, "]"):
             self.paths = ast.literal_eval(text)
+            self.edit.setStyleSheet("")
         else:
             self.paths = text
+            self.edit.setStyleSheet("")
 
     def getdirpath(self):
         self.getpath("dir")
@@ -788,12 +836,15 @@ class FileSpinner:
         dialog.setViewMode(QFileDialog.Detail)
         if filemode == "dir":
             dialog.setFileMode(QFileDialog.Directory)
+            dialog.setWindowIcon(icon_directory)
         elif self.type_ == "v":
             dialog.setFileMode(QFileDialog.ExistingFile)
             dialog.setNameFilter("XML files (*.xml)")
+            dialog.setWindowIcon(icon_file)
         else:
             dialog.setFileMode(QFileDialog.ExistingFiles)
             dialog.setNameFilter("TAR files (*.tar)")
+            dialog.setWindowIcon(icon_file)
 
         if dialog.exec_():
             if filemode == "dir" or self.type_ == "v":
@@ -823,6 +874,34 @@ class FileSpinner:
             layout.addWidget(self.btn)
         if self.btndir:
             layout.addWidget(self.btndir)
+
+    def setBoxHighlighting(self, highlight):
+        self.highlighted = highlight
+        if highlight:
+            self.edit.setStyleSheet("QLineEdit{border: 2px solid " + lwl_darkred + ";}")
+        else:
+            self.edit.setStyleSheet("")
+
+
+class SpinnerToolButton(QToolButton):
+    def __init__(self, parent, icon):
+        super().__init__(parent)
+        self.setObjectName(u"stbtn")
+        self.setMinimumSize(QSize(30, 30))
+        self.setMaximumSize(QSize(30, 30))
+        self.setIcon(icon)
+        self.highlighted = False
+
+    def setBoxHighlighting(self, highlight):
+        self.highlighted = highlight
+        if highlight:
+            self.setStyleSheet(
+                "QToolButton{"
+                "border: 2px solid " + lwl_darkred + ";"
+                "border-radius: 5px;"
+                "}")
+        else:
+            self.setStyleSheet("")
 
 
 class OverviewTextBrowser(QTextBrowser):
@@ -864,29 +943,42 @@ class OverviewRadioBtn(QRadioButton):
         self.setFont(font12)
         self.setCursor(QCursor(Qt.PointingHandCursor))
         self.setStyleSheet(u"QRadioButton{\n"
-                                   "    margin-left: 3px\n"
-                                   "}\n"
-                                   "QRadioButton::indicator {\n"
-                                   "    background-color: #ffffff;\n"
-                                   "    width: 11px;\n"
-                                   "    height: 11px;\n"
-                                   "    border-radius: 6px;\n"
-                                   "    border: 1px solid black;\n"
-                                   "}\n"
-                                   "\n"
-                                   "QRadioButton::indicator:checked {\n"
-                                   "    width: 9px;\n"
-                                   "    height: 9px;\n"
-                                   "    border-radius: 6px;\n"
-                                   "    background-color: #ffffff;\n"
-                                   "    border: 3px solid "+lwl_darkred+";\n"
-                                   "}\n"
-                                   "\n"
-                                   "QRadioButton::indicator:unchecked:hover {\n"
-                                   "    border: 1px solid "+lwl_darkred+";\n"
-                                   "}")
+                           "    margin-left: 3px\n"
+                           "}\n"
+                           "QRadioButton::indicator {\n"
+                           "    background-color: #ffffff;\n"
+                           "    width: 11px;\n"
+                           "    height: 11px;\n"
+                           "    border-radius: 6px;\n"
+                           "    border: 1px solid black;\n"
+                           "}\n"
+                           "\n"
+                           "QRadioButton::indicator:active:checked {\n"
+                           "    width: 9px;\n"
+                           "    height: 9px;\n"
+                           "    border-radius: 6px;\n"
+                           "    background-color: #ffffff;\n"
+                           "    border: 3px solid " + lwl_darkred + ";\n"
+                            "}\n"
+                            "\n"
+                            "QRadioButton::indicator:unchecked:active:hover {\n"
+                            "    border: 1px solid " + lwl_darkred + ";\n"
+                            "}\n"
+                             "QRadioButton:inactive {\n"
+                             "    font: " + lwl_middlegray + ";\n"
+                             "}"
+                           )
         self.setIconSize(QSize(12, 12))
         self.setChecked(False)
+
+    def enable(self, enabled, tooltip=""):
+        self.setEnabled(enabled)
+        if enabled:
+            self.setCursor(QCursor(Qt.PointingHandCursor))
+            self.setToolTip("")
+        else:
+            self.setCursor(QCursor(Qt.ArrowCursor))
+            self.setToolTip(tooltip)
 
 
 class DetailsButton(QPushButton):
@@ -925,35 +1017,211 @@ class LabelButton(QPushButton):
         self.setFont(font12)
         self.setCursor(QCursor(Qt.PointingHandCursor))
         self.setAutoFillBackground(False)
-        self.setStyleSheet(u"QPushButton{\n"
-                            "	background-color: " + lwl_middlegray + ";\n"
-                            "     border-radius: 5px;\n"
-                            "	padding: 3px 10px\n"
-                            "}\n"
-                            "\n"
-                            "QPushButton:active{\n"
-                            "	background-color: " + lwl_lightgray + ";\n"
-                            "     border: 1px solid " + lwl_darkblue + "\n"
-                            "}\n"
-                            "\n"
-                            "QPushButton:active:hover{\n"
-                            "     border: 1px solid " + lwl_darkred + ";\n"
-                            "}\n"
-                            "\n"
-                            "QPushButton:checked{\n"
-                            "	background-color: " + lwl_darkred + ";\n"
-                            "	color: rgb(255, 255, 255);\n"
-                            "     border: none;\n"
-                            "}")
+        self.stsh = u"QPushButton{\n" \
+                    "	background-color: " + white + ";\n"\
+                    "   border-radius: 5px;\n"\
+                    "	padding: 3px 10px;\n"\
+                    "	font: "+lwl_middlegray+";\n"\
+                    "}\n"\
+                    "\n"\
+                    "QPushButton:active{\n"\
+                    "	background-color: " + lwl_lightgray + ";\n"\
+                    "     border: 1px solid " + lwl_darkblue + "\n"\
+                    "}\n"\
+                    "\n"\
+                    "QPushButton:active:hover{\n"\
+                    "     border: 1px solid " + lwl_darkred + ";\n"\
+                    "}\n"\
+                    "\n"\
+                    "QPushButton:checked{\n"\
+                    "	background-color: " + lwl_darkred + ";\n"\
+                    "	color: rgb(255, 255, 255);\n"\
+                    "     border: none;\n"\
+                    "}"
+        self.setStyleSheet(self.stsh)
         self.setCheckable(True)
         self.setChecked(False)
+        self.highlighted = False
+        self.pseudoenabled = True
+
+    def enable(self, enabled):
+        self.setEnabled(enabled)
+        if enabled:
+            self.pseudoenabled = False
+            self.setCursor(QCursor(Qt.PointingHandCursor))
+        else:
+            self.pseudoenabled = False
+            self.setCursor(QCursor(Qt.ArrowCursor))
+
+    def pseudoenable(self):
+        self.enable(True)
+        self.pseudoenabled = True
+
+    def ispseudoenabled(self):
+        return self.pseudoenabled
+
+
+    def setBoxHighlighting(self, highlight):
+        self.highlighted = highlight
+        if highlight:
+            self.setStyleSheet(self.stsh + "QPushButton:active{border: 2px solid " + lwl_darkred + ";}")
+        else:
+            self.setStyleSheet(self.stsh)
 
 
 class Line(QFrame):
     def __init__(self, parent, min_=QSize(0, 0), max_=QSize(16777215, 16777215)):
         super().__init__(parent)
-        self.setObjectName(u"line_11")
+        self.setObjectName(u"line")
         self.setMinimumSize(min_)
         self.setMaximumSize(max_)
         self.setLineWidth(2)
         self.setFrameShape(QFrame.HLine)
+        self.setStyleSheet("QFrame:inactive{border: 2px solid "+lwl_middlegray+";}")
+
+
+class MsgType(Enum):
+    SUCCESS = 0
+    WARNING = 1
+    ERROR = 2
+    ANY = 3
+
+
+class MsgTrigger(Enum):
+    LOAD = 0
+    REQUEST = 1
+    GOBTN = 2
+
+
+class MessageBox(QDialog):
+    def __init__(self, parent, type_: MsgType, trigger: MsgTrigger, details: list = None):
+        super().__init__(parent)
+        self.type_ = type_
+        self.trigger = trigger
+        self.details = details
+        self.utp = UiTextProvider()
+
+        self.setObjectName(u"Dialog")
+        self.resize(390, 405)
+        self.setFont(font12)
+        if self.type_ == MsgType.SUCCESS:
+            self.setWindowIcon(icon_check)
+            self.iconurl = icon_check_url
+        elif self.type_ == MsgType.WARNING:
+            self.setWindowIcon(icon_problem)
+            self.iconurl = icon_problem_url
+        elif self.type_ == MsgType.ERROR:
+            self.setWindowIcon(icon_problem_red)
+            self.iconurl = icon_problem_red_url
+        else:
+            self.setWindowIcon(icon_problem)
+            self.iconurl = icon_problem_url
+        self.setSizeGripEnabled(True)
+        self.setModal(True)
+        self.setWindowModality(Qt.ApplicationModal)
+
+        self.title = QLabel(self)
+        self.title.setObjectName(u"label")
+        self.title.setFont(font12b)
+        horizontalLayout_2 = QHBoxLayout()
+        horizontalLayout_2.setSpacing(0)
+        horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        horizontalLayout_2.addItem(QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum))
+        horizontalLayout_2.addWidget(self.title)
+
+        self.icon = QLabel(self)
+        self.icon.setObjectName(u"label_3")
+        self.icon.setMaximumSize(QSize(30, 30))
+        self.icon.setPixmap(QPixmap(self.iconurl))
+        self.icon.setScaledContents(True)
+        self.info = QLabel(self)
+        self.info.setObjectName(u"label_2")
+        self.info.setWordWrap(True)
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setSpacing(10)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.addWidget(self.icon)
+        self.horizontalLayout.addWidget(self.info)
+
+        if self.details:
+            self.detailsbtn = QPushButton(self)
+            self.detailsbtn.setObjectName(u"pushButton")
+            self.detailsbtn.setMinimumSize(QSize(80, 25))
+            self.detailsbtn.setMaximumSize(QSize(100, 25))
+            self.detailsbtn.clicked.connect(self.toggledetails)
+            self.horizontalLayout_3 = QHBoxLayout()
+            self.horizontalLayout_3.setSpacing(0)
+            self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+            self.horizontalLayout_3.setContentsMargins(40, -1, -1, -1)
+            self.horizontalLayout_3.addWidget(self.detailsbtn)
+            self.horizontalLayout_3.addItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+
+            self.textBrowser = QTextBrowser(self)
+            self.textBrowser.setObjectName(u"textBrowser")
+            self.textBrowser.setAutoFillBackground(True)
+            self.textBrowser.setStyleSheet(
+                u"QTextBrowser{background-color: #f0f0f0; margin-left: 40px;}")
+            self.textBrowser.setFrameShape(QFrame.NoFrame)
+            self.textBrowser.setFrameShadow(QFrame.Sunken)
+            self.textBrowser.setTextInteractionFlags(
+                Qt.LinksAccessibleByKeyboard |
+                Qt.LinksAccessibleByMouse |
+                Qt.TextBrowserInteraction |
+                Qt.TextSelectableByKeyboard |
+                Qt.TextSelectableByMouse)
+            self.detailed = False
+            self.textBrowser.hide()
+
+        self.buttonBox = QDialogButtonBox(self)
+        self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        if self.trigger == MsgTrigger.GOBTN and self.type_ == MsgType.WARNING:
+            self.buttonBox.setStandardButtons(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            btn = self.buttonBox.button(QDialogButtonBox.Cancel)
+            btn.setText("Abbrechen")
+        else:
+            self.buttonBox.setStandardButtons(QDialogButtonBox.Ok)
+
+        # layout dialog window
+        verticalLayout = QVBoxLayout(self)
+        verticalLayout.setObjectName(u"verticalLayout")
+        verticalLayout.addLayout(horizontalLayout_2)
+        verticalLayout.addLayout(self.horizontalLayout)
+        verticalLayout.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed))
+        if details:
+            verticalLayout.addLayout(self.horizontalLayout_3)
+        verticalLayout.addItem(QSpacerItem(20, 2, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        if details:
+            verticalLayout.addWidget(self.textBrowser)
+        verticalLayout.addItem(QSpacerItem(20, 30, QSizePolicy.Minimum, QSizePolicy.Fixed))
+        verticalLayout.addWidget(self.buttonBox)
+
+        self.retranslateUi()
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+    def toggledetails(self):
+        if self.detailed:
+            self.textBrowser.hide()
+            self.detailsbtn.setText("Details")
+            self.detailed = False
+        else:
+            self.textBrowser.show()
+            self.detailsbtn.setText("Weniger")
+            self.detailed = True
+
+    def retranslateUi(self):
+        self.setWindowTitle(QCoreApplication.translate("Dialog", snippets.msgWindow[self.type_.value], None))
+        self.title.setText(QCoreApplication.translate("Dialog", snippets.msgTitle[self.type_.value][self.trigger.value], None))
+        self.info.setText(QCoreApplication.translate("Dialog", snippets.msgInfo[self.type_.value][self.trigger.value], None))
+
+        if not self.details:
+            return
+        self.detailsbtn.setText(QCoreApplication.translate("Dialog", snippets.msgdet, None))
+        if self.type_ == MsgType.SUCCESS:
+            html = self.utp.constructSuccessBrowser(self.details)
+        elif self.type_ == MsgType.WARNING or self.type_ == MsgType.ERROR:
+            html = self.utp.constructErrorBrowser(self.details)
+        else:
+            html = self.utp.wraptext(str(self.details[0]))
+        self.textBrowser.setHtml(html)
