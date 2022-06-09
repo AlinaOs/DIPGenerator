@@ -1,16 +1,16 @@
 {
-  "no": 0,
+  "no": 4,
   "shortName": "Rohdaten",
   "recommendation": "Nur für Nutzer*innen mit speziellen technischen Anforderungen empfohlen!",
-  "repInfo": "Sie können mehrere AIPs auswählen. Beachten Sie jedoch: Da im Profil 0 keine Redundanzen herausgefiltert werden, kann der Download durch redundante Dateien sehr groß werden, wenn Sie mehrere AIPs herunterladen.",
-  "deliveryInfo": "Für das Profil 0 ist die Anzeige im Viewer aus technischen Gründen nicht möglich.",
+  "repInfo": "Sie können mehrere AIPs auswählen. Beachten Sie jedoch: Da im Profil 4 keine Redundanzen herausgefiltert werden, kann der Download durch redundante Dateien sehr groß werden, wenn Sie mehrere AIPs herunterladen.",
+  "deliveryInfo": "Für das Profil 4 ist die Anzeige im Viewer aus technischen Gründen nicht möglich.",
   "fullDesc": {
     "desc": [
-      "Das Rohdaten-Profil ist genau genommen kein DIP-Profil, da für die Auslieferung der Archivalien kein eigenes Paket erzeugt wird. Vielmehr erhalten Nutzer des Profil 0 eine unbearbeitete Kopie des/derjenigen AIPs, welche/s sie gerne einsehen wollen. Somit enthält dieses Auslieferungspaket gerade keine zusätzlichen Daten zum DIP oder aus der Verzeichnungssoftware.",
-      "Das Profil 0 kann auch nur ausgewählt werden, wenn keine Inhalte aus dem AIP für die Nutzung gesperrt sind. Teilweise Zugriffssperren können nur in den DIPs automatisch herausgefiltert werden."
+      "Das Rohdaten-Profil ist genau genommen kein DIP-Profil, da für die Auslieferung der Archivalien kein eigenes Paket erzeugt wird. Vielmehr erhalten Nutzer des Profil 4 eine unbearbeitete Kopie des/derjenigen AIPs, welche/s sie gerne einsehen wollen. Somit enthält dieses Auslieferungspaket gerade keine zusätzlichen Daten zum DIP oder aus der Verzeichnungssoftware.",
+      "Das Profil 4 kann auch nur ausgewählt werden, wenn keine Inhalte aus dem AIP für die Nutzung gesperrt sind. Teilweise Zugriffssperren können nur in den DIPs automatisch herausgefiltert werden."
     ],
     "suitability": [
-      "Das Profil 0 ist hauptsächlich für technisch versierte Nutzer geeignet, die die digitalen Unterlagen unverändert in genau der Form einsehen möchten, in der sie im elektronischen Langzeitarchiv gespeichert sind. Auch für technisch interessierte Nutzer kann dieses Profil interessant sein, wenn sie den Aufbau des AIP selbst untersuchen wollen, z.B. um in ferner Zukunft etwas über die frühere Arbeitsweise von elektronischen Langzeitarchiven zu erfahren."
+      "Das Profil 4 ist hauptsächlich für technisch versierte Nutzer geeignet, die die digitalen Unterlagen unverändert in genau der Form einsehen möchten, in der sie im elektronischen Langzeitarchiv gespeichert sind. Auch für technisch interessierte Nutzer kann dieses Profil interessant sein, wenn sie den Aufbau des AIP selbst untersuchen wollen, z.B. um in ferner Zukunft etwas über die frühere Arbeitsweise von elektronischen Langzeitarchiven zu erfahren."
     ],
     "ieLevel": [
       "Alle Metadaten werden übernommen."

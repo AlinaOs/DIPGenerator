@@ -31,12 +31,15 @@ class DIPRequestHandler:
         return jsonconf
 
     def _loadpdescs(self):
-        descs = {}
+        # descs = {}
+        descs = []
         for profile in self._conf["profileConfigs"]:
-            path = self._conf["profileConfigs"][profile]["desc"]
+            # path = self._conf["profileConfigs"][profile]["desc"]
+            path = profile["desc"]
             with open(os.path.join(self._confdir, path), "r", encoding="UTF-8") as desc:
                 jsondesc = json.load(desc)
-                descs.update({profile: jsondesc})
+                # descs.update({profile: jsondesc})
+                descs.append(jsondesc)
         return descs
 
     def _loadinfo(self):
@@ -53,13 +56,15 @@ class DIPRequestHandler:
             return resp
         resp.newsuccess(ip="AIP", type_="parse", detail="Request AIPs")
 
-        if uchoices["profileNo"] == 0:
+        # if uchoices["profileNo"] == 0:
+        if uchoices["profileNo"] == 3:
             path = os.path.join(uchoices["outputPath"], aips[0].getieid())
             if os.path.exists(path):
                 resp.newerror(PathExistsError(path))
                 return resp
             os.mkdir(path)
-            xsdpath = os.path.join(self._confdir, self._conf["profileConfigs"]["profile0"]["xsd"])
+            # xsdpath = os.path.join(self._confdir, self._conf["profileConfigs"]["profile0"]["xsd"])
+            xsdpath = os.path.join(self._confdir, self._conf["profileConfigs"][3]["xsd"])
             for a in aips:
                 errs = a.save(path)
                 if errs is not None:
@@ -72,7 +77,8 @@ class DIPRequestHandler:
             resp.newsuccess(detail=path, ip="AIP", type_="save")
             return resp
 
-        pconf = dict(self._conf["profileConfigs"]["profile" + str(uchoices["profileNo"])])
+        # pconf = dict(self._conf["profileConfigs"]["profile" + str(uchoices["profileNo"])])
+        pconf = dict(self._conf["profileConfigs"][uchoices["profileNo"]])
         pconf.update({"xsl": os.path.join(self._confdir, pconf["xsl"])})
         pconf.update({"xsd": os.path.join(self._confdir, pconf["xsd"])})
         pconf.update({"generatorName": self._conf["generatorName"]})
@@ -115,37 +121,59 @@ class DIPRequestHandler:
     def getinfo(self, prop):
         return self._info[prop]
 
-    def getprofileinfo(self, p=None):
+    def getprofileinfo(self, p: int = None):
         if p is not None:
-            return self._descs["profile" + str(p)]["fullDesc"]
+            # return self._descs["profile" + str(p)]["fullDesc"]
+            return self._descs[p]["fullDesc"]
         else:
             info = {
-                "nos": [self._descs["profile" + str(i)]["no"] for i in range(4)],
-                "names": [self._descs["profile" + str(i)]["shortName"] for i in range(4)],
-                "recoms": [self._descs["profile" + str(i)]["recommendation"] for i in range(4)]
+                "nos": [self._descs[i]["no"] for i in range(4)],
+                "names": [self._descs[i]["shortName"] for i in range(4)],
+                "recoms": [self._descs[i]["recommendation"] for i in range(4)]
+                # "nos": [self._descs["profile" + str(i)]["no"] for i in range(4)],
+                # "names": [self._descs["profile" + str(i)]["shortName"] for i in range(4)],
+                # "recoms": [self._descs["profile" + str(i)]["recommendation"] for i in range(4)]
             }
             return info
 
     def getdefaultprofile(self):
-        return self._conf["profileConfigs"][self._conf["standardProfile"]]["profileMetadata"]["profileNumber"]
+        return self._conf["standardProfile"]
 
     def getdefaultdelivery(self, no):
-        return self._conf["profileConfigs"]["profile" + str(no)]["defaultDelivery"]
+        return self._conf["profileConfigs"][no]["defaultDelivery"]
 
     def getdefaultaips(self, no):
-        return self._conf["profileConfigs"]["profile" + str(no)]["defaultAIP"]
+        return self._conf["profileConfigs"][no]["defaultAIP"]
 
     def deliverychoice(self, no):
-        return self._conf["profileConfigs"]["profile" + str(no)]["deliveryChoice"]
+        return self._conf["profileConfigs"][no]["deliveryChoice"]
 
-    def getdeliverymessage(self, no):
-        return self._descs["profile"+str(no)]["deliveryInfo"]
+    def getdeliverymessage(self, no: int):
+        return self._descs[no]["deliveryInfo"]
 
-    def getaipmessage(self, no):
-        return self._descs["profile"+str(no)]["repInfo"]
+    def getaipmessage(self, no: int):
+        return self._descs[no]["repInfo"]
 
     def aipchoice(self, no):
-        return self._conf["profileConfigs"]["profile" + str(no)]["AIPChoice"]
+        return self._conf["profileConfigs"][no]["AIPChoice"]
+
+    # def getdefaultdelivery(self, no):
+    #     return self._conf["profileConfigs"]["profile" + str(no)]["defaultDelivery"]
+    #
+    # def getdefaultaips(self, no):
+    #     return self._conf["profileConfigs"]["profile" + str(no)]["defaultAIP"]
+    #
+    # def deliverychoice(self, no):
+    #     return self._conf["profileConfigs"]["profile" + str(no)]["deliveryChoice"]
+    #
+    # def getdeliverymessage(self, no):
+    #     return self._descs["profile"+str(no)]["deliveryInfo"]
+    #
+    # def getaipmessage(self, no):
+    #     return self._descs["profile"+str(no)]["repInfo"]
+    #
+    # def aipchoice(self, no):
+    #     return self._conf["profileConfigs"]["profile" + str(no)]["AIPChoice"]
 
     def getaipinfo(self, paths, vze=None):
         resp = InfoResponse()

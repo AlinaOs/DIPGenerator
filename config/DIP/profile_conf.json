@@ -6,67 +6,58 @@
     "generatorName": "DiPS DIP-Generierungsmodul",
     "generatorVersion": "1.0",
     "info": "info.json",
-    "standardProfile": "profile1",
-    "profileConfigs": {
-        "profile0": {
-            "DIPGeneration": false,
-            "desc": "profiles/p0/p0_desc_de.json",
-            "xsd": "profiles/p0/DIP-P0.xsd",
-            "AIPChoice": true,
-            "defaultAIP": "latest",
-            "deliveryChoice": false,
-            "defaultDelivery": "download",
-            "profileMetadata":{
-                "profileNumber": 0,
-                "profileDescription": "Roh-AIP",
-                "profileVersion": "dev"
-            }
-        },
-        "profile1": {
-            "DIPGeneration": true,
-            "xsl": "profiles/p1/p1_xsl.xsl",
-            "desc": "profiles/p1/p1_desc_de.json",
-            "xsd": "profiles/p1/DIP-P1.xsd",
-            "AIPChoice": false,
-            "defaultAIP": "latest",
-            "deliveryChoice": false,
-            "defaultDelivery": "viewer",
-            "profileMetadata":
-                {
-                    "profileNumber": 1,
-                    "profileDescription": "Standard",
-                    "profileVersion": "dev"
-                }
-        },
-        "profile2": {
-            "DIPGeneration": true,
-            "xsl": "profiles/p2/p2_xsl.xsl",
-            "desc": "profiles/p2/p2_desc_de.json",
-            "xsd": "profiles/p2/DIP-P2.xsd",
-            "AIPChoice": true,
-            "defaultAIP": "frame",
-            "deliveryChoice": true,
-            "defaultDelivery": "both",
-            "profileMetadata": {
-                "profileNumber": 2,
-                "profileDescription": "Wissenschaftlich",
-                "profileVersion": "dev"
-            }
-        },
-        "profile3": {
-            "DIPGeneration": true,
-            "xsl": "profiles/p3/p3_xsl.xsl",
-            "desc": "profiles/p3/p3_desc_de.json",
-            "xsd": "profiles/p3/DIP-P3.xsd",
-            "AIPChoice": true,
-            "defaultAIP": "all",
-            "deliveryChoice": true,
-            "defaultDelivery": "download",
-            "profileMetadata": {
-                "profileNumber": 3,
-                "profileDescription": "Technisch",
-                "profileVersion": "dev"
-            }
-        }
-    }
+    "standardProfile": 0,
+    "profileConfigs": [
+        {"DIPGeneration": true,
+        "xsl": "profiles/p1/p1_xsl.xsl",
+        "desc": "profiles/p1/p1_desc_de.json",
+        "xsd": "profiles/p1/DIP-P1.xsd",
+        "AIPChoice": false,
+        "defaultAIP": "latest",
+        "deliveryChoice": false,
+        "defaultDelivery": "viewer",
+        "profileMetadata":{
+            "profileNumber": 1,
+            "profileDescription": "Standard",
+            "profileVersion": "dev"
+        }},
+        {"DIPGeneration": true,
+        "xsl": "profiles/p2/p2_xsl.xsl",
+        "desc": "profiles/p2/p2_desc_de.json",
+        "xsd": "profiles/p2/DIP-P2.xsd",
+        "AIPChoice": true,
+        "defaultAIP": "frame",
+        "deliveryChoice": true,
+        "defaultDelivery": "both",
+        "profileMetadata": {
+            "profileNumber": 2,
+            "profileDescription": "Wissenschaftlich",
+            "profileVersion": "dev"
+        }},
+        {"DIPGeneration": true,
+        "xsl": "profiles/p3/p3_xsl.xsl",
+        "desc": "profiles/p3/p3_desc_de.json",
+        "xsd": "profiles/p3/DIP-P3.xsd",
+        "AIPChoice": true,
+        "defaultAIP": "all",
+        "deliveryChoice": true,
+        "defaultDelivery": "download",
+        "profileMetadata": {
+            "profileNumber": 3,
+            "profileDescription": "Technisch",
+            "profileVersion": "dev"
+        }},
+        {"DIPGeneration": false,
+        "desc": "profiles/p4/p4_desc_de.json",
+        "xsd": "profiles/p4/DIP-P4.xsd",
+        "AIPChoice": true,
+        "defaultAIP": "latest",
+        "deliveryChoice": false,
+        "defaultDelivery": "download",
+        "profileMetadata":{
+            "profileNumber": 4,
+            "profileDescription": "Roh-AIP",
+            "profileVersion": "dev"
+        }}
+    ]
 }
