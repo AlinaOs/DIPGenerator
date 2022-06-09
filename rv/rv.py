@@ -100,9 +100,9 @@ class RequestViewer:
         self.window.aipFileSpinner.edit.textChanged.connect(self.managespinnergobtn)
 
         self.pbtns.buttonClicked.connect(self.setprofile)
-        self.pdbtns.buttonToggled.connect(self.toggleitb_p)
+        self.pdbtns.buttonClicked.connect(self.toggleitb_p)
         self.rbtns.buttonToggled.connect(self.toggleaip)
-        self.rdbtns.buttonToggled.connect(self.toggleitb_r)
+        self.rdbtns.buttonClicked.connect(self.toggleitb_r)
 
         self.obtns.buttonClicked.connect(self.setdelivery)
         self.window.outFileSpinner.edit.textChanged.connect(self.manageoutput)
@@ -275,9 +275,9 @@ class RequestViewer:
         elif id_ == 2:
             self.delivery = "both"
 
-    def toggleitb_p(self, btn, checked):
+    def toggleitb_p(self, btn):
         id_ = self.pdbtns.id(btn)
-        if checked:
+        if not self.window.profileInfos[id_]:
             pinfo = self.drh.getprofileinfo(id_)
             infos = [
                 pinfo["desc"],
@@ -300,9 +300,9 @@ class RequestViewer:
             self.window.profileInfos[id_] = None
             tb.close()
 
-    def toggleitb_r(self, btn, checked):
+    def toggleitb_r(self, btn):
         id_ = self.rdbtns.id(btn)
-        if checked:
+        if not self.window.aipInfos[id_]:
             self.window.createitb(
                 self.window.rScrollAreaContents,
                 self.window.aips[id_],

@@ -4,6 +4,7 @@ import gc
 import os.path
 from enum import Enum
 
+import PySide6
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
                             QMetaObject, QObject, QPoint, QRect,
                             QSize, QTime, QUrl, Qt)
@@ -51,8 +52,10 @@ icon_check_url = "svg/Check.svg"
 icon_check = QIcon()  # https://www.iconshock.com/freeicons/check-circle-fill-24
 icon_check.addFile(icon_check_url, QSize(), QIcon.Normal, QIcon.Off)
 icon_check_pm = None
-icon_link = QIcon()
-icon_link.addFile("svg/LWL_Link.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_link_up = QIcon()
+icon_link_up.addFile("svg/LWL_Link_up.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_link_down = QIcon()
+icon_link_down.addFile("svg/LWL_Link_down.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_directory = QIcon()
 icon_directory.addFile("svg/Directory.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_file = QIcon()
@@ -63,6 +66,7 @@ icon_problem.addFile(icon_problem_url, QSize(), QIcon.Normal, QIcon.Off)
 icon_problem_red_url = "svg/LWL_Fehler_melden_rot.svg"
 icon_problem_red = QIcon()
 icon_problem_red.addFile(icon_problem_red_url, QSize(), QIcon.Normal, QIcon.Off)
+
 
 class RvMainWindow(QMainWindow):
     def __init__(self, pn):
@@ -114,6 +118,7 @@ class RvMainWindow(QMainWindow):
 
         self.overviewGroup = QButtonGroup()
         self.outFileSpinner = None
+        self.goButton = None
 
         self.setWindowIcon(icon_DIP)
         self.setupUi()
@@ -223,20 +228,11 @@ class RvMainWindow(QMainWindow):
             title.setToolTipDuration(-1)
             title.setStyleSheet(u".QLabel{\n" \
                                 "    color: " + lwl_darkblue + ";\n" \
-                                                               "    padding-top: 1px;\n" \
-                                                               "    padding-bottom: 1px;\n" \
-                                                               "}")
+                                "    padding-top: 1px;\n" \
+                                "    padding-bottom: 1px;\n" \
+                                "}")
 
-            info = QPushButton(stepFrame)
-            info.setObjectName(u"step" + str(i) + "info")
-            info.setMinimumSize(QSize(20, 0))
-            info.setMaximumSize(QSize(30, 16777215))
-            info.setCursor(QCursor(Qt.PointingHandCursor))
-            info.setStyleSheet(u"QPushButton{\n"
-                               "    padding-right: 5px\n"
-                               "}")
-            info.setIcon(icon_info)
-            info.setFlat(True)
+            info = ToolButton(stepFrame, icon_info, QSize(20, 20), QSize(20, 0), QSize(30, 16777215))
 
             # Layout step frame
             horizontalLayout = QHBoxLayout(stepFrame)
@@ -258,7 +254,7 @@ class RvMainWindow(QMainWindow):
             self.infoGroup.setId(info, i - 1)
 
         # Create Step 1 (file spinner)
-        self.spinnerGoBtn = SpinnerToolButton(self.scrollAreaContents, icon_check)
+        self.spinnerGoBtn = ToolButton(self.scrollAreaContents, icon_check, QSize(20, 20), QSize(30, 30), QSize(30, 30))
 
         self.aipFileSpinner = FileSpinner(self.scrollAreaContents, "a")
         self.vzeFileSpinner = FileSpinner(self.scrollAreaContents, "v")
@@ -286,7 +282,7 @@ class RvMainWindow(QMainWindow):
         for i in range(self.pn):
             pTitle = LabelButton(self.scrollAreaContents)
             pTitle.setObjectName(u"ptitle")
-            pTitle.setMinimumSize(QSize(120, 18))
+            pTitle.setMinimumSize(QSize(150, 18))
             pTitle.setMaximumSize(QSize(200, 100))
 
             pRecom = QLabel(self.scrollAreaContents)
@@ -382,7 +378,7 @@ class RvMainWindow(QMainWindow):
         page = QWidget()
         page.setObjectName("info")
         self.infopage = QTextBrowser(page)
-        self.infopage.setObjectName("infoTextBrowser" + str(i + 1))
+        self.infopage.setObjectName("infoTextBrowser")
         self.infopage.setFont(font12)
         self.infopage.setTextInteractionFlags(
             Qt.LinksAccessibleByKeyboard |
@@ -390,6 +386,7 @@ class RvMainWindow(QMainWindow):
             Qt.TextBrowserInteraction |
             Qt.TextSelectableByKeyboard |
             Qt.TextSelectableByMouse)
+        self.infopage.setFrameShape(QFrame.NoFrame)
         vl = QVBoxLayout(page)
         vl.setSpacing(0)
         vl.setObjectName("verticalLayout_6")
@@ -493,10 +490,7 @@ class RvMainWindow(QMainWindow):
         self.outFileSpinner.addToLayout(ofsLayoutH)
 
         # Request button
-        self.goButton = LabelButton(overviewFrame)
-        self.goButton.setObjectName(u"goButton")
-        self.goButton.setMinimumSize(QSize(60, 0))
-        self.goButton.setMaximumSize(QSize(60, 16777215))
+        self.goButton = ToolButton(overviewFrame, min_=QSize(60, 0), max_=QSize(60, 16777215))
         self.goButton.setFont(font12b)
 
         self.ovButtonLayout = QHBoxLayout()
@@ -630,7 +624,7 @@ class RvMainWindow(QMainWindow):
             self.repsLabel.setText(snippets.repLabel)
 
     def createitb(self, parent, layout, type_, index_, infotexts):
-        info = InfoTextBrowser(parent)
+        info = InfoTextBrowser(parent, self.calcheaderwidth())
         if type_ == "a":
             info.setHtml(self.utp.constructRepItb(infotexts["date"], infotexts["files"]))
             self.aipInfos[index_] = info
@@ -638,6 +632,23 @@ class RvMainWindow(QMainWindow):
             info.setHtml(self.utp.constructProfileItb(infotexts))
             self.profileInfos[index_] = info
         layout.addWidget(info)
+
+    def calcheaderwidth(self):
+        pheader = self.profiles[0].children()[0]
+        w = (pheader.count() - 1) * 10
+        for i in reversed(range(pheader.count())):
+            w += pheader.itemAt(i).widget().width()
+        return w
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        allinfos = []
+        allinfos.extend(self.profileInfos)
+        allinfos.extend(self.aipInfos)
+        for info in allinfos:
+            if info:
+                info.setfwidth(self.calcheaderwidth())
+                info.updateGeometry()
 
     def retranslateAips(self, formats):
         for i in range(len(self.aips)):
@@ -689,38 +700,6 @@ class RvMainWindow(QMainWindow):
 
     def updateOvRepTb(self, nos, aip=False):
         self.repTextBrowser.setHtml(self.utp.constructOvRepItb(nos, aip))
-
-    def createSuccessMsg(self, output):
-        msg = QMessageBox(self)
-        msg.setWindowIcon(icon_check)
-        msg.setSizeGripEnabled(True)
-        msg.setIcon(QMessageBox.Icon.Information)
-        msg.setText(snippets.msgFinalSuccess)
-        msg.setWindowTitle(snippets.msgWindowInfo)
-        it = snippets.infoFinalSuccess + ": "
-        for o in output:
-            o = os.path.normpath(o)
-            it += "\n"+o
-        msg.setInformativeText(it)
-        msg.exec()
-
-    def createErrorMsg(self, type_: int = 8):
-        msg = QMessageBox(self)
-        msg.setWindowTitle(snippets.msgWindowError)
-        msg.setSizeGripEnabled(True)
-        msg.setWindowIcon(icon_problem_red)
-        msg.setIcon(QMessageBox.Icon.Critical)
-
-        if type_ == 0:
-            msg.setText(snippets.msgLoadError)
-            msg.setInformativeText(snippets.infoLoadError)
-        elif type_ == 1:
-            msg.setText(snippets.msgFinalError)
-            msg.setInformativeText(snippets.infoFinalError)
-        else:
-            msg.setText(snippets.msgDefaultError)
-
-        msg.exec()
 
     def retranslateBaseUi(self):
         self.setWindowTitle(QCoreApplication.translate("self", snippets.windowTitle, None))
@@ -808,12 +787,12 @@ class FileSpinner:
 
         self.btn = None
         if type_ != "o":
-            self.btn = SpinnerToolButton(parent, icon_file)
+            self.btn = ToolButton(parent, icon_file, QSize(20, 20), QSize(30, 30), QSize(30, 30))
             self.btn.clicked.connect(self.getpath)
 
         self.btndir = None
         if type_ != "v":
-            self.btndir = SpinnerToolButton(parent, icon_directory)
+            self.btndir = ToolButton(parent, icon_directory, QSize(20, 20), QSize(30, 30), QSize(30, 30))
             self.btndir.clicked.connect(self.getdirpath)
 
     def update(self, text):
@@ -883,14 +862,37 @@ class FileSpinner:
             self.edit.setStyleSheet("")
 
 
-class SpinnerToolButton(QToolButton):
-    def __init__(self, parent, icon):
+class ToolButton(QToolButton):
+    def __init__(self, parent, icon: QIcon = None, iconsize: QSize = None, min_: QSize = None, max_: QSize = None):
         super().__init__(parent)
         self.setObjectName(u"stbtn")
-        self.setMinimumSize(QSize(30, 30))
-        self.setMaximumSize(QSize(30, 30))
-        self.setIcon(icon)
+        if min_:
+            self.setMinimumSize(min_)
+        if max_:
+            self.setMaximumSize(max_)
+        self.radius = 5
+        if icon:
+            self.setIcon(icon)
+            self.setIconSize(iconsize)
+            self.radius = iconsize.width()/2
+            self.setStyleSheet("QToolButton{border-radius: "+str(self.radius)+"px}")
+            self.setCursor(QCursor(Qt.PointingHandCursor))
         self.highlighted = False
+        self.pseudoenabled = False
+
+    def enable(self, enabled):
+        self.setEnabled(enabled)
+        if enabled:
+            self.pseudoenabled = False
+        else:
+            self.pseudoenabled = False
+
+    def pseudoenable(self):
+        self.enable(True)
+        self.pseudoenabled = True
+
+    def ispseudoenabled(self):
+        return self.pseudoenabled
 
     def setBoxHighlighting(self, highlight):
         self.highlighted = highlight
@@ -898,10 +900,13 @@ class SpinnerToolButton(QToolButton):
             self.setStyleSheet(
                 "QToolButton{"
                 "border: 2px solid " + lwl_darkred + ";"
-                "border-radius: 5px;"
+                "border-radius: "+str(self.radius)+"px;"
                 "}")
         else:
-            self.setStyleSheet("")
+            self.setStyleSheet(
+                "QToolButton{"
+                "border-radius: "+str(self.radius)+"px;"
+                "}")
 
 
 class OverviewTextBrowser(QTextBrowser):
@@ -918,8 +923,9 @@ class OverviewTextBrowser(QTextBrowser):
 
 
 class InfoTextBrowser(QTextBrowser):
-    def __init__(self, parent):
+    def __init__(self, parent, width):
         super().__init__(parent)
+        self.fwidth = width
         self.setObjectName(u"Info")
         self.setFont(font12)
         self.setFrameShape(QFrame.NoFrame)
@@ -931,6 +937,19 @@ class InfoTextBrowser(QTextBrowser):
             Qt.TextBrowserInteraction |
             Qt.TextSelectableByKeyboard |
             Qt.TextSelectableByMouse)
+
+    def minimumSizeHint(self) -> PySide6.QtCore.QSize:
+        doc = self.document().clone()
+        doc.setTextWidth(self.fwidth)
+        height = doc.size().height()
+        height += self.frameWidth() * 2
+        return QSize(self.viewport().width(), height)
+
+    def sizeHint(self):
+        return self.minimumSizeHint()
+
+    def setfwidth(self, w):
+        self.fwidth = w
 
 
 class OverviewRadioBtn(QRadioButton):
@@ -988,26 +1007,17 @@ class DetailsButton(QPushButton):
         self.setMinimumSize(QSize(60, 18))
         self.setMaximumSize(QSize(80, 100))
         self.setFont(font12)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
-        self.setAutoFillBackground(False)
-        self.setStyleSheet(u"QPushButton{\n"
-                            "	background-color: " + lwl_middlegray + ";\n"
-                            "     border-radius: 5px;\n"
-                            "     padding: 1px 3px\n"
-                            "}\n"
-                            "\n"
-                            "QPushButton:active{\n"
-                            "	background-color: " + lwl_lightgray + ";\n"
-                            "     border: 1px solid " + lwl_darkblue + "\n"
-                            "}\n"
-                            "\n"
-                            "QPushButton:active:hover{\n"
-                            "     border: 1px solid " + lwl_darkred + ";\n"
-                            "}")
-        self.setIcon(icon_link)
-        self.setIconSize(QSize(11, 11))
-        self.setCheckable(True)
-        self.setChecked(False)
+        self.setIcon(icon_link_down)
+        self.setIconSize(QSize(16, 16))
+        self.clicked.connect(self.toggleicon)
+        self.on = False
+
+    def toggleicon(self):
+        if self.on:
+            self.setIcon(icon_link_down)
+        else:
+            self.setIcon(icon_link_up)
+        self.on = not self.on
 
 
 class LabelButton(QPushButton):
@@ -1059,7 +1069,6 @@ class LabelButton(QPushButton):
 
     def ispseudoenabled(self):
         return self.pseudoenabled
-
 
     def setBoxHighlighting(self, highlight):
         self.highlighted = highlight
@@ -1190,10 +1199,10 @@ class MessageBox(QDialog):
         verticalLayout.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed))
         if details:
             verticalLayout.addLayout(self.horizontalLayout_3)
-        verticalLayout.addItem(QSpacerItem(20, 2, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        verticalLayout.addItem(QSpacerItem(20, 2, QSizePolicy.Minimum, QSizePolicy.Fixed))
         if details:
             verticalLayout.addWidget(self.textBrowser)
-        verticalLayout.addItem(QSpacerItem(20, 30, QSizePolicy.Minimum, QSizePolicy.Fixed))
+        verticalLayout.addItem(QSpacerItem(20, 30, QSizePolicy.Minimum, QSizePolicy.Expanding))
         verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi()
