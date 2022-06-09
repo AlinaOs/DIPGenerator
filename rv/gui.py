@@ -903,10 +903,13 @@ class ToolButton(QToolButton):
                 "border-radius: "+str(self.radius)+"px;"
                 "}")
         else:
-            self.setStyleSheet(
-                "QToolButton{"
-                "border-radius: "+str(self.radius)+"px;"
-                "}")
+            if self.icon():
+                self.setStyleSheet(
+                    "QToolButton{"
+                    "border-radius: "+str(self.radius)+"px;"
+                    "}")
+            else:
+                self.setStyleSheet("")
 
 
 class OverviewTextBrowser(QTextBrowser):
