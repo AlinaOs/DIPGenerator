@@ -3,20 +3,76 @@ import gc
 import json
 import tarfile
 import tempfile
-import traceback
-from abc import ABC, abstractmethod
-
-from saxonc import PySaxonProcessor
+from abc import ABC
+from saxonpy import PySaxonProcessor
 
 from drh.err import *
 from drh.ip import AIP, DIP, ViewDIP
 
 
+class AbstractDrhResponse(ABC):
+
+    def __init__(self):
+        self._responses = []
+        self._errors = []
+        self._success = None
+
+    def newerror(self, errors: DrhError | list[DrhError]) -> None:
+        if not isinstance(errors, list):
+            self._errors = [errors]
+        else:
+            self._errors.extend(errors)
+
+    def getfullresponse(self) -> dict:
+        return {
+            "success": self._success,
+            "errors": self._errors
+        }
+
+    def printresponse(self) -> None:
+        print("Success:")
+        print(self._success)
+        print("Errors:")
+        print(self._errors)
+
+
+class InfoResponse(AbstractDrhResponse):
+    def __init__(self):
+        super().__init__()
+        self._errors = []
+
+    def setinfo(self, infodict: dict) -> None:
+        self._success = infodict
+
+    def getinfo(self) -> dict:
+        return self._success
+
+    def geterrors(self) -> list[DrhError]:
+        return self._errors
+
+
+class DrhResponse(AbstractDrhResponse):
+    def __init__(self):
+        super().__init__()
+        self._responses = []
+        self._errors = []
+        self._success = []
+
+    def newsuccess(self, ip: str, type_: str, detail: str = None) -> None:
+        suc = {
+            "IP": ip,
+            "type": type_
+        }
+        if detail:
+            suc.update({"detail": detail})
+        self._success.append(suc)
+
+
 class DIPRequestHandler:
-    def __init__(self, confdir, conf, vconfdir, vconf):
+    def __init__(self, confdir: str, conf: str, vconfdir: str, vconf: str):
         self._confdir = confdir
         self._conf = self._loadconf(confdir, conf)
-        self.vconf = self._loadconf(vconfdir, vconf)
+        self._vconf = self._loadconf(vconfdir, vconf)
         self._descs = self._loadpdescs()
         self._info = self._loadinfo()
         self._tempdir = tempfile.TemporaryDirectory()
@@ -25,30 +81,27 @@ class DIPRequestHandler:
         self._proc.set_cwd(os.getcwd())
         self._xsltproc = self._proc.new_xslt30_processor()
 
-    def _loadconf(self, dir_, conf):
+    def _loadconf(self, dir_: str, conf: str) -> dict:
         with open(os.path.join(dir_, conf), "r") as confile:
             jsonconf = json.load(confile)
         return jsonconf
 
-    def _loadpdescs(self):
-        # descs = {}
+    def _loadpdescs(self) -> list[dict]:
         descs = []
         for profile in self._conf["profileConfigs"]:
-            # path = self._conf["profileConfigs"][profile]["desc"]
             path = profile["desc"]
             with open(os.path.join(self._confdir, path), "r", encoding="UTF-8") as desc:
                 jsondesc = json.load(desc)
-                # descs.update({profile: jsondesc})
                 descs.append(jsondesc)
         return descs
 
-    def _loadinfo(self):
+    def _loadinfo(self) -> dict:
         path = self._conf["info"]
         with open(os.path.join(self._confdir, path), "r", encoding="utf-8") as info:
             jsoninfo = json.load(info)
         return jsoninfo
 
-    def startrequest(self, uchoices):
+    def startrequest(self, uchoices: dict) -> DrhResponse:
         resp = DrhResponse()
         aips, errors = self._parseaip(uchoices["chosenAips"], mode="req")
         if errors is not None and len(errors) > 0:
@@ -56,14 +109,12 @@ class DIPRequestHandler:
             return resp
         resp.newsuccess(ip="AIP", type_="parse", detail="Request AIPs")
 
-        # if uchoices["profileNo"] == 0:
         if uchoices["profileNo"] == 3:
             path = os.path.join(uchoices["outputPath"], aips[0].getieid())
             if os.path.exists(path):
                 resp.newerror(PathExistsError(path))
                 return resp
             os.mkdir(path)
-            # xsdpath = os.path.join(self._confdir, self._conf["profileConfigs"]["profile0"]["xsd"])
             xsdpath = os.path.join(self._confdir, self._conf["profileConfigs"][3]["xsd"])
             for a in aips:
                 errs = a.save(path)
@@ -77,7 +128,6 @@ class DIPRequestHandler:
             resp.newsuccess(detail=path, ip="AIP", type_="save")
             return resp
 
-        # pconf = dict(self._conf["profileConfigs"]["profile" + str(uchoices["profileNo"])])
         pconf = dict(self._conf["profileConfigs"][uchoices["profileNo"]])
         pconf.update({"xsl": os.path.join(self._confdir, pconf["xsl"])})
         pconf.update({"xsd": os.path.join(self._confdir, pconf["xsd"])})
@@ -105,7 +155,7 @@ class DIPRequestHandler:
 
         # If user chose Viewer as delivery type, create ViewDIP
         if uchoices["deliveryType"] != "download":
-            vdip = ViewDIP(dip, self.vconf, self._tempdir, self._xsltproc)
+            vdip = ViewDIP(dip, self._vconf, self._tempdir, self._xsltproc)
             if not vdip.initsuccess():
                 resp.newerror(ParsingError(vdip.getid(), vdip.gettb()))
                 return resp
@@ -118,64 +168,42 @@ class DIPRequestHandler:
 
         return resp
 
-    def getinfo(self, prop):
+    def getinfo(self, prop: str) -> dict:
         return self._info[prop]
 
-    def getprofileinfo(self, p: int = None):
+    def getprofileinfo(self, p: int = None) -> dict:
         if p is not None:
-            # return self._descs["profile" + str(p)]["fullDesc"]
             return self._descs[p]["fullDesc"]
         else:
             info = {
                 "nos": [self._descs[i]["no"] for i in range(4)],
                 "names": [self._descs[i]["shortName"] for i in range(4)],
                 "recoms": [self._descs[i]["recommendation"] for i in range(4)]
-                # "nos": [self._descs["profile" + str(i)]["no"] for i in range(4)],
-                # "names": [self._descs["profile" + str(i)]["shortName"] for i in range(4)],
-                # "recoms": [self._descs["profile" + str(i)]["recommendation"] for i in range(4)]
             }
             return info
 
-    def getdefaultprofile(self):
+    def getdefaultprofile(self) -> int:
         return self._conf["standardProfile"]
 
-    def getdefaultdelivery(self, no):
+    def getdefaultdelivery(self, no: int) -> str:
         return self._conf["profileConfigs"][no]["defaultDelivery"]
 
-    def getdefaultaips(self, no):
-        return self._conf["profileConfigs"][no]["defaultAIP"]
-
-    def deliverychoice(self, no):
+    def deliverychoice(self, no: int) -> bool:
         return self._conf["profileConfigs"][no]["deliveryChoice"]
 
-    def getdeliverymessage(self, no: int):
+    def getdeliverymessage(self, no: int) -> str:
         return self._descs[no]["deliveryInfo"]
 
-    def getaipmessage(self, no: int):
-        return self._descs[no]["repInfo"]
+    def getdefaultaips(self, no: int) -> str:
+        return self._conf["profileConfigs"][no]["defaultAIP"]
 
-    def aipchoice(self, no):
+    def aipchoice(self, no: int) -> bool:
         return self._conf["profileConfigs"][no]["AIPChoice"]
 
-    # def getdefaultdelivery(self, no):
-    #     return self._conf["profileConfigs"]["profile" + str(no)]["defaultDelivery"]
-    #
-    # def getdefaultaips(self, no):
-    #     return self._conf["profileConfigs"]["profile" + str(no)]["defaultAIP"]
-    #
-    # def deliverychoice(self, no):
-    #     return self._conf["profileConfigs"]["profile" + str(no)]["deliveryChoice"]
-    #
-    # def getdeliverymessage(self, no):
-    #     return self._descs["profile"+str(no)]["deliveryInfo"]
-    #
-    # def getaipmessage(self, no):
-    #     return self._descs["profile"+str(no)]["repInfo"]
-    #
-    # def aipchoice(self, no):
-    #     return self._conf["profileConfigs"]["profile" + str(no)]["AIPChoice"]
+    def getaipmessage(self, no: int) -> str:
+        return self._descs[no]["repInfo"]
 
-    def getaipinfo(self, paths, vze=None):
+    def getaipinfo(self, paths: str | list, vze: str = None) -> InfoResponse:
         resp = InfoResponse()
         aips, errors = self._parseaip(paths, vze=vze)
         resp.newerror(errors)
@@ -221,7 +249,7 @@ class DIPRequestHandler:
         })
         return resp
 
-    def _parseaip(self, paths, vze=None, mode="info"):
+    def _parseaip(self, paths: list | str, vze: str = None, mode: str = "info") -> (list[AIP], list[DrhError]):
         errors = []
         ieid = None
         aips = []
@@ -296,65 +324,6 @@ class DIPRequestHandler:
 
         return aips, errors
 
-    def prepare_exit(self):
+    def prepare_exit(self) -> None:
         self._tempdir.cleanup()
         self._proc.release()
-
-
-class AbstractDrhResponse(ABC):
-
-    def __init__(self):
-        self._responses = []
-        self._errors = []
-        self._success = None
-
-    def newerror(self, errors):
-        if not isinstance(errors, list):
-            self._errors = [errors]
-        else:
-            self._errors.extend(errors)
-
-    def getfullresponse(self):
-        return {
-            "success": self._success,
-            "errors": self._errors
-        }
-
-    def printresponse(self):
-        print("Success:")
-        print(self._success)
-        print("Errors:")
-        print(self._errors)
-
-
-class InfoResponse(AbstractDrhResponse):
-    def __init__(self):
-        super().__init__()
-        self._responses = []
-        self._errors = []
-
-    def setinfo(self, infodict):
-        self._success = infodict
-
-    def getinfo(self):
-        return self._success
-
-    def geterrors(self):
-        return self._errors
-
-
-class DrhResponse(AbstractDrhResponse):
-    def __init__(self):
-        super().__init__()
-        self._responses = []
-        self._errors = []
-        self._success = []
-
-    def newsuccess(self, ip, type_, detail=None):
-        suc = {
-            "IP": ip,
-            "type": type_
-        }
-        if detail:
-            suc.update({"detail": detail})
-        self._success.append(suc)

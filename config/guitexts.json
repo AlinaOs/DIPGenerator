@@ -1,0 +1,148 @@
+{
+  "AIP": "AIP",
+  "aipcreated": "Erstellt",
+  "aiptable": [
+    "Datei",
+    "Format",
+    "Dateigröße",
+    "Erhaltungslevel"
+  ],
+  "choice": "Ihre Auswahl",
+  "deliv": "Bereitstellung",
+  "details": "Details",
+  "errors": {
+    "DrhError":
+        "Unbekannter Fehler",
+    "NoPathError":
+        "Sie müssen einen Pfad für die AIP-Dateien angeben, bevor Sie sie laden können!",
+    "PathError":
+        "Die Datei/der Ordner existiert nicht oder der Pfad ist ein falscher Typ (d.h., er führt zu einem Ordner, obwohl er zu einer Datei führen sollte, oder er führt zu einer Datei, obwohl er zu einem Ordner führen sollte).",
+    "PathExistsError":
+        "Das Programm konnte eine(n) notwendige(n) Datei/Pfad nicht erstellen, da die Datei/der Pfad bereits existiert.",
+    "FormatError":
+        "Mindestens eine der eingereichten AIP-Dateien ist keine TAR-Datei.",
+    "AIPError":
+        "Mindestens eine der eingereichte AIP-Dateien konnte nicht gelesen werden, da sie kein valides AIP darstellt.",
+    "IEError":
+        "Die eingereichten AIPs und der ausgewählte Archivsoftware-Export repräsentieren nicht dieselbe Intellektuelle Einheit. Mindestens eine der Dateien repräsentiert eine andere Einheit als die anderen.",
+    "IEUncompleteError":
+        "Es scheint, dass nicht alle AIPs für das gewünschte Archivale eingereicht worden sind. Mindestens ein Parent-AIP wird genannt, das nicht vorhanden ist."
+  },
+  "go": "Los",
+  "goStatus": "DIP anfordern",
+  "help": "Hilfe",
+  "ieProps": [
+    "Signatur",
+    "Titel",
+    "Art",
+    "Laufzeit",
+    "Enthält"
+  ],
+  "impactedfile": "Pfad der Datei",
+  "impactedip": "Betroffenes Informationspaket",
+  "menuTitles": [
+    "DIP-Generierung",
+    "Was sind DIP-Profile?",
+    "Was sind Repräsentationen?",
+    "Programm-Info"
+  ],
+  "menuStatuses": [
+    "DIP Anforderung",
+    "Hilfe: Was sind Profile?",
+    "Hilfe: Was sind Repräsentationen?",
+    "Hilfe: Programm-Info"
+  ],
+  "msgdet": "Details",
+  "msgInfo": [
+      [
+          "",
+          "Speicherort(e) siehe Details."
+      ],
+      [
+          "Die AIP-Dateien konnten erfolgreich eingelesen werden, doch es wurde ein mögliches Problem erkannt. Überprüfen Sie ggf. anhand der Details, ob die gemeldeten Probleme relevant sind.",
+          "Das DIP konnte erfolgreich gespeichert werden, doch bei der Erstellung des DIP oder dem Einlesen der AIP-Dateien wurde ein mögliches Problem erkannt. Überprüfen Sie ggf. anhand der Details, ob die gemeldeten Probleme relevant sind. Falls ja, beheben Sie die Probleme, laden Sie die AIP-Dateien erneut und fragen Sie das DIP erneut an.",
+          "Sie haben einen neuen AIP-Pfad eingegeben, aber noch nicht geladen. Möglicherweise werden Ihnen noch die alten, unerwünschten AIPs angezeigt?<br><br>Klicken Sie \"Ok\", wenn mit der DIP-Generierung trotzdem fortgefahren werden soll.<br><br>Wenn Sie die eingegebenen Dateipfade zum Generieren der DIPs nutzen wollen, klicken Sie \"Abbrechen\" und bestätigen Sie zunächst die AIP-Eingabe."
+      ],
+      [
+          "Siehe die Details für mehr Infos.",
+          "Siehe Details für mehr Infos.",
+          "Mindestens eine notwendige Angabe fehlt! Bitte<ol><li>geben Sie AIP-Dateien oder einen Ordner mit AIP-Dateien ein (und bestätigen diese Auswahl)</li><li>wählen Sie einen Speicherort für die fertigen DIP-Dateien</li></ol>"
+      ],
+      [
+          "Keine Details verfügbar.",
+          "Keine Details verfügbar."
+      ]
+  ],
+  "msgTitle": [
+      [
+          "AIPs erfolgreich geladen!",
+          "DIP erfolgreich gespeichert!"
+      ],
+      [
+          "Mögliche Probleme beim Laden",
+          "Mögliche Probleme beim Laden oder Speichern",
+          "Alles richtig?"
+      ],
+      [
+          "TAR-Pakete konnten nicht geladen werden!",
+          "DIP konnte nicht gespeichert werden!",
+          "Fehlende Angaben!"
+      ],
+      [
+          "Etwas ist schiefgelaufen!",
+          "Etwas ist schiefgelaufen!",
+          "Etwas ist schiefgelaufen!"
+      ]
+  ],
+  "msgWindow": [
+      "Info",
+      "Hinweis",
+      "Fehler",
+      "Fehler"
+  ],
+  "noIeTitle": "Noch kein Archivale gewählt!",
+  "noRepTitle": "Noch keine Repräsentation gewählt!",
+  "overviewBtns": [
+      "Viewer",
+      "Download",
+      "Beides"
+  ],
+  "profile": "Profil",
+  "profinfosubs": [
+    null,
+    "Empfehlung",
+    "Metadaten der Ebene Intellektuelle Einheit (IE)",
+    "Metadaten auf Datei-Ebene (Item)",
+    "Metadaten aus dem archivischen Prozess",
+    "Verfügbare Repräsentationen",
+    "Sonstiges"
+  ],
+  "profLabel": "Wählen Sie hier, wie die technischen Daten des Archivales für Sie aufbereitet werden sollen!",
+  "profTbTitle": "Profil",
+  "root": "Ursprung",
+  "rep": "Repräsentation",
+  "repLabel": "Wählen Sie hier, welche technischen Repräsentationen des Archivales Sie sehen wollen!",
+  "repTbTitle": "Repräsentationen",
+  "showless": "Weniger",
+  "spinnerPh": [
+    "AIP-Datei",
+    "Archivsoftware-Export",
+    "Speichern unter"
+  ],
+  "spinnerTooltip": [
+      "Datei(en) wählen",
+      "Ordner wählen",
+      "Datei wählen",
+      "AIPs laden"
+  ],
+  "step": "Schritt",
+  "stepTitles": [
+    "Archivale wählen",
+    "DIP-Profil wählen",
+    "Repräsentationen wählen"
+  ],
+  "traceback": "Fehlermeldung",
+  "typecollection": "Dateisammlung",
+  "typeefile": "E-Akte",
+  "windowTitle": "DIP Request Viewer"
+}

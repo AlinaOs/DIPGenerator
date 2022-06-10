@@ -4,11 +4,10 @@ import json
 import tempfile
 import tarfile
 import traceback
-from datetime import datetime
-from abc import ABC, abstractmethod
 import xml.etree.cElementTree as ET
 from lxml import etree
-from saxonpy import PySaxonProcessor
+from datetime import datetime
+from abc import ABC, abstractmethod
 
 
 class AbstractIP(ABC):
