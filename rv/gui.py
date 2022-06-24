@@ -45,26 +45,26 @@ font16 = QFont()
 font16.setFamilies(["Source Sans Pro"])
 font16.setPointSize(16)
 
-icon_DIP = QIcon()  # https://www.iconshock.com/freeicons/package-16
-icon_DIP.addFile("svg/Package.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_DIP = QIcon()
+icon_DIP.addFile("svg/package.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_info = QIcon()
-icon_info.addFile("svg/LWL_mehr_Infos.svg", QSize(), QIcon.Normal, QIcon.Off)
-icon_check_url = "svg/Check.svg"
-icon_check = QIcon()  # https://www.iconshock.com/freeicons/check-circle-fill-24
+icon_info.addFile("svg/info.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_check_url = "svg/check.svg"
+icon_check = QIcon()
 icon_check.addFile(icon_check_url, QSize(), QIcon.Normal, QIcon.Off)
 icon_check_pm = None
 icon_link_up = QIcon()
-icon_link_up.addFile("svg/LWL_Link_up.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_link_up.addFile("svg/arrow_up.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_link_down = QIcon()
-icon_link_down.addFile("svg/LWL_Link_down.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_link_down.addFile("svg/arrow_down.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_directory = QIcon()
-icon_directory.addFile("svg/Directory.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_directory.addFile("svg/directory.svg", QSize(), QIcon.Normal, QIcon.Off)
 icon_file = QIcon()
-icon_file.addFile("svg/LWL_Dokument.svg", QSize(), QIcon.Normal, QIcon.Off)
-icon_problem_url = "svg/LWL_Fehler_melden.svg"
+icon_file.addFile("svg/file_document.svg", QSize(), QIcon.Normal, QIcon.Off)
+icon_problem_url = "svg/warning.svg"
 icon_problem = QIcon()
 icon_problem.addFile(icon_problem_url, QSize(), QIcon.Normal, QIcon.Off)
-icon_problem_red_url = "svg/LWL_Fehler_melden_rot.svg"
+icon_problem_red_url = "svg/error.svg"
 icon_problem_red = QIcon()
 icon_problem_red.addFile(icon_problem_red_url, QSize(), QIcon.Normal, QIcon.Off)
 
