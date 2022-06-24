@@ -1,8 +1,5 @@
 import ast
 from enum import Enum
-
-import PySide6
-from PySide6 import QtCore
 from PySide6.QtCore import (QRect, QSize, Qt, Signal)
 from PySide6.QtGui import (QBrush, QColor, QCursor,
                            QFont, QIcon, QPalette, QPixmap, QResizeEvent, QMouseEvent)
@@ -20,6 +17,10 @@ from rv.snippets import UiTextProvider
 ####################
 # Design constants
 ####################
+"""
+The design constants are used to facilitate the implementation of a corporate design
+using a corporate color scheme, pictogram style and font style.
+"""
 
 lwl_darkred = "#9b182a"  # RGB 155/24/42
 lwl_darkblue = "#00325f"  # RGB 0/50/95
@@ -74,7 +75,23 @@ icon_problem_red.addFile(icon_problem_red_url, QSize(), QIcon.Normal, QIcon.Off)
 
 
 class LabelButton(QPushButton):
+    """A label acting as a button (inheriting from QPushButton).
+
+    A LabelButton has a distinct style depending on whether it is
+    active or not. The active cursor is the pointing hand. LabelButtons
+    can be pseudoenabled via pseudoenable() and they can be highlighted
+    (marked by a red border) via setBoxHighlighting().
+    """
+
     def __init__(self, parent: QWidget):
+        """Initialize and return a LabelButton object.
+
+        Initially, the button will be pseudoenabled and
+        not highlighted.
+
+        :param parent: The QWidget acting as the parent for the button.
+        """
+
         super().__init__(parent)
         self.setFont(font12)
         self.setCursor(QCursor(Qt.PointingHandCursor))
@@ -106,7 +123,9 @@ class LabelButton(QPushButton):
         self._highlighted = False
         self._pseudoenabled = True
 
-    def enable(self, enabled):
+    def enable(self, enabled: bool):
+        """Set the button to active."""
+
         self.setEnabled(enabled)
         if enabled:
             self._pseudoenabled = False
@@ -115,14 +134,29 @@ class LabelButton(QPushButton):
             self._pseudoenabled = False
             self.setCursor(QCursor(Qt.ArrowCursor))
 
-    def pseudoenable(self) -> None:
+    def pseudoenable(self):
+        """Pseudoenable this button.
+
+        The button will be set to active and its pseudoenabled
+        property will be set to True.
+        """
+
         self.enable(True)
         self._pseudoenabled = True
 
     def ispseudoenabled(self) -> bool:
+        """Return, whether the button is pseudoenabled or not."""
+
         return self._pseudoenabled
 
-    def setBoxHighlighting(self, highlight: bool) -> None:
+    def setBoxHighlighting(self, highlight: bool):
+        """Switch the highlighting of this button off or on.
+
+        Switching the box highlighting on will mark this button by a red border.
+
+        :param highlight: Indicates, whether the highlighting shall be switched on (True) or off (False).
+        """
+
         self._highlighted = highlight
         if highlight:
             self.setStyleSheet(self._stsh + "QPushButton:active{border: 2px solid " + lwl_darkred + ";}")
@@ -131,7 +165,14 @@ class LabelButton(QPushButton):
 
 
 class MenuButton(QPushButton):
+    """A label acting as a menu button (inheriting from QPushButton)."""
+
     def __init__(self, parent: QWidget, checked: bool):
+        """Initialize and return a MenuButton object.
+
+        :param parent: The QWidget acting as the parent for the button.
+        """
+
         super().__init__(parent)
         self.setMinimumSize(QSize(0, 21))
         self.setMaximumSize(QSize(16777215, 21))
@@ -158,7 +199,17 @@ class MenuButton(QPushButton):
 
 
 class DetailsButton(QPushButton):
+    """A label acting as a details button (inheriting from QPushButton).
+
+    The details button's icon will be toggled, when the button is clicked.
+    """
+
     def __init__(self, parent: QWidget):
+        """Initialize and return a DetailsButton object.
+
+        :param parent: The QWidget acting as the parent for the button.
+        """
+
         super().__init__(parent)
         self.setMinimumSize(QSize(60, 18))
         self.setMaximumSize(QSize(80, 100))
@@ -168,7 +219,7 @@ class DetailsButton(QPushButton):
         self.clicked.connect(self._toggleicon)
         self._on = False
 
-    def _toggleicon(self) -> None:
+    def _toggleicon(self):
         if self._on:
             self.setIcon(icon_link_down)
         else:
@@ -177,12 +228,32 @@ class DetailsButton(QPushButton):
 
 
 class ToolButton(QToolButton):
+    """A customized tool button (inheriting from QToolButton).
+
+    The ToolButton will have a pointing hand as active cursor. Contrary
+    to ordinary tool buttons, it's displayed as a circle. ToolButtons can
+    be pseudoenabled via pseudoenable() and they can be highlighted (marked
+    by a red border) via setBoxHighlighting().
+    """
+
     def __init__(self,
                  parent: QWidget,
                  icon: QIcon = None,
                  iconsize: QSize = None,
                  min_: QSize = None,
                  max_: QSize = None):
+        """Initialize and return a ToolButton object.
+
+        Initially, the button will be pseudoenabled and
+        not highlighted.
+
+        :param parent: The QWidget acting as the parent for the button.
+        :param icon: The icon that the tool button will show.
+        :param iconsize: The size of the icon. If an icon is provided, the iconsize must be provided as well!
+        :param min_: The minimum size of the ToolButton.
+        :param max_: The maximum size of the ToolButton.
+        """
+
         super().__init__(parent)
         if min_:
             self.setMinimumSize(min_)
@@ -198,21 +269,37 @@ class ToolButton(QToolButton):
         self._highlighted = False
         self._pseudoenabled = False
 
-    def enable(self, enabled: bool) -> None:
+    def enable(self, enabled: bool):
+        """Set the button to active."""
+
         self.setEnabled(enabled)
         if enabled:
             self._pseudoenabled = False
         else:
             self._pseudoenabled = False
 
-    def pseudoenable(self) -> None:
+    def pseudoenable(self):
+        """Pseudoenable this button.
+
+        The button will be set to active and its pseudoenabled
+        property will be set to True.
+        """
         self.enable(True)
         self._pseudoenabled = True
 
     def ispseudoenabled(self) -> bool:
+        """Return, whether the button is pseudoenabled or not."""
+
         return self._pseudoenabled
 
-    def setBoxHighlighting(self, highlight: bool) -> None:
+    def setBoxHighlighting(self, highlight: bool):
+        """Switch the highlighting of this button off or on.
+
+        Switching the box highlighting on will mark this button by a red border.
+
+        :param highlight: Indicates, whether the highlighting shall be switched on (True) or off (False).
+        """
+
         self._highlighted = highlight
         if highlight:
             self.setStyleSheet(
@@ -231,8 +318,13 @@ class ToolButton(QToolButton):
 
 
 class OverviewRadioBtn(QRadioButton):
+    """A customized radio button (inheriting from QRadioButton), having a distinct style."""
 
     def __init__(self, parent: QWidget):
+        """Initialize and return an OverviewRadioBtn object.
+
+        :param parent: The QWidget acting as the parent for the button.
+        """
         super().__init__(parent)
         self.setMinimumSize(QSize(70, 20))
         self.setMaximumSize(QSize(16777215, 20))
@@ -268,6 +360,8 @@ class OverviewRadioBtn(QRadioButton):
         self.setChecked(False)
 
     def enable(self, enabled: bool, tooltip: str = ""):
+        """Set the button to active."""
+
         self.setEnabled(enabled)
         if enabled:
             self.setCursor(QCursor(Qt.PointingHandCursor))
@@ -278,9 +372,16 @@ class OverviewRadioBtn(QRadioButton):
 
 
 class Line(QFrame):
+    """A customized Line (inheriting from QFrame)."""
+
     def __init__(self, parent: QWidget,
                  min_: QSize = QSize(0, 0),
                  max_: QSize = QSize(16777215, 16777215)):
+        """Initialize and return a Line object.
+
+        :param parent: The QWidget acting as the parent for the line.
+        """
+
         super().__init__(parent)
         self.setMinimumSize(min_)
         self.setMaximumSize(max_)
@@ -290,8 +391,14 @@ class Line(QFrame):
 
 
 class OverviewTextBrowser(QTextBrowser):
+    """Customized TextBrowser (inheriting from QTextBrowser) for the user choice overview."""
 
     def __init__(self, parent: QWidget):
+        """Initialize and return an OverviewTextBrowser object.
+
+        :param parent: The QWidget acting as the parent for the text browser.
+        """
+
         super().__init__(parent)
         self.setMinimumSize(QSize(160, 20))
         self.setMaximumSize(QSize(250, 16777215))
@@ -302,7 +409,19 @@ class OverviewTextBrowser(QTextBrowser):
 
 
 class InfoTextBrowser(QTextBrowser):
+    """Customized TextBrowser (inheriting from QTextBrowser) for the info pages.
+
+    To fit the browser to its content and avoid scrolling, call setfwidth() each
+    time, a resize event of the window containing the browser happens.
+    """
+
     def __init__(self, parent: QWidget, width: int):
+        """Initialize and return an InfoTextBrowser object.
+
+        :param parent: The QWidget acting as the parent for the text browser.
+        :param width: The maximum width of the browser.
+        """
+
         super().__init__(parent)
         self._fwidth = width
         self.setFont(font12)
@@ -317,6 +436,12 @@ class InfoTextBrowser(QTextBrowser):
             Qt.TextSelectableByMouse)
 
     def minimumSizeHint(self) -> QSize:
+        """Return the minimum size of the browser.
+
+        Overrides the browser's minimumSizeHint() method and returns
+        the size, which is needed to show the entire HTML in a browser
+        as wide as the browser's fwidth. This causes the browser to fit
+        it's content, if the fwidth is up-to-date."""
         doc = self.document().clone()
         doc.setTextWidth(self._fwidth)
         height = doc.size().height()
@@ -324,17 +449,39 @@ class InfoTextBrowser(QTextBrowser):
         return QSize(self.viewport().width(), height)
 
     def sizeHint(self) -> QSize:
+        """Return the size hint of the browser.
+
+        Overrides the browser's sizeHint() method and returns
+        the size hint computed by minimumSizeHint().
+        """
         return self.minimumSizeHint()
 
-    def setfwidth(self, w: int) -> None:
+    def setfwidth(self, w: int):
+        """Set the browsers preferred width.
+
+        This method should be called whenever a resize event happens
+        in the parent window. The given width should be the preferred
+        width according to the architecture of the parent window. E.g., it
+        can be computed by getting the width of a widget, that matches
+        the width the browser shall have.
+
+        :param w: The preferred width as int.
+        """
         self._fwidth = w
         self.updateGeometry()
 
 
 class ClickableLineEdit(QLineEdit):
+    """A LineEdit, that emits a 'clicked' signal."""
+
     clicked = Signal()
 
     def __init__(self, parent: QWidget):
+        """Initialize and return a ClickableLineEdit object.
+
+        :param parent: The QWidget acting as the parent for the LineEdit.
+        """
+
         super().__init__(parent)
         self.setClearButtonEnabled(True)
         self.setMinimumSize(QSize(50, 25))
@@ -342,11 +489,31 @@ class ClickableLineEdit(QLineEdit):
         self.textChanged.connect(self.update)
 
     def mousePressEvent(self, e: QMouseEvent):
+        """Handle a mouse press event.
+
+        Overrides the LineEdit's mousePressEvent().
+        """
+
         self.clicked.emit()
 
 
 class FileSpinner:
+    """A class combining several widgets to manage a FileSpinner and FileDialog.
+
+    The FileSpinner provides a ClickableLineEdit and one or both buttons for choosing
+    a file or a directory. It handles the QFileDialog opening on clicking the buttons
+    and saves the selected files or directory in its path property. The paths are also
+    formatted nicely and shown in the LineEdit. The LineEdit can be highlighted (marked
+    by a red border) via setBoxHighlighting().
+    """
+
     def __init__(self, parent: QWidget, type_: str):
+        """Initialize and return a FileSpinner object.
+
+        :param parent: The QWidget acting as the parent for the FileSpinner.
+        :param type_: Indicates whether the spinner shall have a directory btn ("o"), a file btn ("v") or both ("a").
+        """
+
         self._type = type_
         self._highlighted = False
         self.paths = None
@@ -368,7 +535,9 @@ class FileSpinner:
             self.btndir = ToolButton(parent, icon_directory, QSize(20, 20), QSize(30, 30), QSize(30, 30))
             self.btndir.clicked.connect(self._getdirpath)
 
-    def update(self, text: str)-> None:
+    def update(self, text: str):
+        """Update the text in the ClickableLineEdit with the given text."""
+
         if text == "":
             self.paths = None
             if self._highlighted:
@@ -380,10 +549,16 @@ class FileSpinner:
             self.paths = text
             self.edit.setStyleSheet("")
 
-    def _getdirpath(self) -> None:
+    def _getdirpath(self):
+        """Open a file dialog for choosing a directory."""
         self._getpath("dir")
 
-    def _getpath(self, filemode: str = None) -> None:
+    def _getpath(self, filemode: str = None):
+        """Open a file dialog and save the outcome.
+
+        :param filemode: Indicates whether a directory ("dir), a VZE .xml ("v") or a .tar ("t") shall be chosen.
+        """
+
         dialog = QFileDialog()
         dialog.setViewMode(QFileDialog.Detail)
         if filemode == "dir":
@@ -409,7 +584,22 @@ class FileSpinner:
                     self.edit.setText(dialog.selectedFiles()[0])
                 self.paths = dialog.selectedFiles()
 
-    def setToolTip(self, text1: str, text2: str = None) -> None:
+    def setToolTip(self, text1: str, text2: str = None):
+        """Set a tooltip for the FileSpinner's button(s).
+
+        Convenience method: Since FileSpinner doesn't inherit from QWidget,
+        it cannot be assigned a tooltip directly. This method handles adding
+        tooltips to the buttons contained in the FileSpinner by assigning them
+        separately.
+
+        If the FileSpinner contains only one button (file or directory), only
+        one text has to be given as param. If it contains a file and a directory
+        button, two texts have to be given and the second one is used for the directory.
+
+        :param text1: Text to be used for a filebtn (or the dirbtn, if only one btn exists).
+        :param text2: Text to be used for a dirbtn, if both a filebtn and a dirbtn exist.
+        """
+
         if self.btn:
             self.btn.setToolTip(text1)
         else:
@@ -417,17 +607,42 @@ class FileSpinner:
         if text2 and self.btndir:
             self.btndir.setToolTip(text2)
 
-    def setPlaceholderText(self, text: str) -> None:
+    def setPlaceholderText(self, text: str):
+        """Set a placeholder text for the FileSpinner's LineEdit.
+
+        Convenience method: Since FileSpinner doesn't inherit from QLineEdit,
+        it cannot be assigned a placeholder text directly. This method handles
+        assigning a placeholder text to the FileSpinner's LineEdit separately.
+
+        :param text: The placeholder text to be assigned.
+        """
+
         self.edit.setPlaceholderText(text)
 
-    def addToLayout(self, layout: QLayout) -> None:
+    def addToLayout(self, layout: QLayout):
+        """Add the FileSpinner to the given Layout.
+
+        Convenience method: Since FileSpinner doesn't inherit from QWidget,
+        it cannot be added to a QLayout directly. This method handles adding
+        all widgets contained in the FileSpinner by adding them separately.
+
+        :param layout: The QLayout the FileSpinner should be added to.
+        """
+
         layout.addWidget(self.edit)
         if self.btn:
             layout.addWidget(self.btn)
         if self.btndir:
             layout.addWidget(self.btndir)
 
-    def setBoxHighlighting(self, highlight: bool) -> None:
+    def setBoxHighlighting(self, highlight: bool):
+        """Switch the highlighting of the FileSpinner's LineEdit off or on.
+
+        Switching the box highlighting on will mark the LineEdit by a red border.
+
+        :param highlight: Indicates, whether the highlighting shall be switched on (True) or off (False).
+        """
+
         self._highlighted = highlight
         if highlight:
             self.edit.setStyleSheet("QLineEdit{border: 2px solid " + lwl_darkred + ";}")
@@ -443,18 +658,33 @@ class MsgType(Enum):
 
 
 class MsgTrigger(Enum):
-    LOAD = 0
-    REQUEST = 1
-    GOBTN = 2
+    LOAD = 0  # spinnerGoButton
+    REQUEST = 1  # finished request
+    GOBTN = 2  # goButton
 
 
 class MessageBox(QDialog):
+    """A custom resizable MessageBox.
+
+    Depending on the message type and trigger the box shows different
+    icons and texts.
+    """
+
     def __init__(self,
                  parent: QWidget,
                  type_: MsgType,
                  trigger: MsgTrigger,
                  texts: str,
                  details: list[str] | list[DrhError] = None):
+        """Initialize and return a MessageBox object.
+
+        :param parent: The QWidget acting as parent for the MessageBox.
+        :param type_: The type of message that is to be displayed.
+        :param trigger: The part of the program that triggered the message.
+        :param texts: The path to the json file containg the texts for the UiTextProvider.
+        :param details: Message details as a list of strings or a list of DrhErrors.
+        """
+
         super().__init__(parent)
         self._type = type_
         self._trigger = trigger
@@ -549,7 +779,9 @@ class MessageBox(QDialog):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
-    def _toggledetails(self) -> None:
+    def _toggledetails(self):
+        """Show or hide the details section."""
+
         if self._detailed:
             self.textBrowser.hide()
             self.detailsbtn.setText(self._utp.s("details"))
@@ -559,7 +791,9 @@ class MessageBox(QDialog):
             self.detailsbtn.setText(self._utp.s("showless"))
             self._detailed = True
 
-    def _retranslateMb(self) -> None:
+    def _retranslateMb(self):
+        """Add texts to all widgets."""
+
         self.setWindowTitle(self._utp.sfl("msgWindows", self._type.value))
         self.title.setText(self._utp.sfnl("msgTitle", self._type.value, self._trigger.value))
         self.info.setText(self._utp.sfnl("msgInfo", self._type.value, self._trigger.value))
@@ -582,6 +816,8 @@ class MessageBox(QDialog):
 
 
 class RvMainWindow(QMainWindow):
+    """Customized MainWindow for the Request Viewer application."""
+
     centralwidget: QWidget
     stackedWidget: QStackedWidget
     _pn: int
@@ -621,6 +857,12 @@ class RvMainWindow(QMainWindow):
     goButton: ToolButton
 
     def __init__(self, pn: int, texts: str):
+        """Initialize and return a RvMainWindow object.
+
+        :param pn: The total number of profiles available.
+        :param texts: Path to the json file containing the texts for the UiTextProvider.
+        """
+
         super().__init__()
         self._utp = UiTextProvider(texts)
         self.centralwidget = None
@@ -674,7 +916,9 @@ class RvMainWindow(QMainWindow):
         self.setWindowIcon(icon_DIP)
         self._setupUi()
 
-    def _setupUi(self) -> None:
+    def _setupUi(self):
+        """Set up the UI and finally show the window."""
+
         self.resize(794, 570)
         palette = QPalette()
         brush1 = QBrush(QColor(255, 255, 255, 255))
@@ -1046,6 +1290,8 @@ class RvMainWindow(QMainWindow):
         self._retranslateBaseUi()
 
     def _retranslateBaseUi(self):
+        """Add texts to all components of the UI."""
+
         self.setWindowTitle(self._utp.s("windowTitle"))
 
         for i in range(4):
@@ -1085,7 +1331,14 @@ class RvMainWindow(QMainWindow):
         self.goButton.setStatusTip(self._utp.s("goStatus"))
         self.goButton.setText(self._utp.s("go"))
 
-    def createAIP(self, vl: QLayout, parent: QWidget, index_: int) -> None:
+    def createAIP(self, vl: QLayout, parent: QWidget, index_: int):
+        """Add UI components containing information about a choosable AIP.
+
+        :param vl: The layout to which the components shall be appended.
+        :param parent: The QWidget acting as parent for the widgets.
+        :param index_: The number of the AIP
+        """
+
         aiptitle = LabelButton(parent)
         aiptitle.setMinimumSize(QSize(60, 17))
         aiptitle.setMaximumSize(QSize(70, 100))
@@ -1137,7 +1390,9 @@ class RvMainWindow(QMainWindow):
         self.repsDetGroup.addButton(aipdetails)
         self.repsDetGroup.setId(aipdetails, index_)
 
-    def closeAips(self) -> None:
+    def closeAips(self):
+        """Close all AIPs and their widgets."""
+
         for i in range(len(self.aipInfos)):
             if not self.aipInfos[i]:
                 continue
@@ -1158,7 +1413,18 @@ class RvMainWindow(QMainWindow):
         self.aipTitles = []
         self.aipFormats = []
 
-    def setAIPenabled(self, enabled: bool, aiplayout: QLayout, label: str = None) -> None:
+    def setAIPenabled(self, enabled: bool, aiplayout: QLayout, label: str = None):
+        """Enable or disable an AIP.
+
+        If the AIP is disabled, it will be greyish and can't be chosen or
+        expanded to show information.
+
+        :param enabled: Indicates whether to enable (True) or disable (False) the AIP.
+        :param aiplayout: The AIP's layout.
+        :param label: An optional label to be shown, e.g. explaining why AIPs are disabled.
+        :return:
+        """
+
         header = aiplayout.children()[0]
         if enabled:
             for i in range(header.count()):
@@ -1171,7 +1437,16 @@ class RvMainWindow(QMainWindow):
         else:
             self.repsLabel.setText(self._utp.s("repLabel"))
 
-    def createitb(self, parent: QWidget, layout: QLayout, type_: str, index_: int, infotexts: dict) -> None:
+    def createitb(self, parent: QWidget, layout: QLayout, type_: str, index_: int, infotexts: dict):
+        """Create an info TextBrowser for an AIP or a profile.
+
+        :param parent: The QWidget acting as parent for the TextBrowser.
+        :param layout: The layout to which the TextBrowser shall be appended.
+        :param type_: The type of TextBrowser ("a" for AIP and "p" for profile).
+        :param index_: The index of the profile or AIP that shall get an info TextBrowser.
+        :param infotexts: The information to be displayed as dictionary.
+        """
+
         info = InfoTextBrowser(parent, self.calcheaderwidth())
         if type_ == "a":
             info.setHtml(self._utp.constructRepItb(infotexts["date"], infotexts["files"]))
@@ -1182,13 +1457,23 @@ class RvMainWindow(QMainWindow):
         layout.addWidget(info)
 
     def calcheaderwidth(self) -> int:
+        """Calculate the width of the profile headers.
+
+        :return: The width as int.
+        """
+
         pheader = self.profiles[0].children()[0]
         w = (pheader.count() - 1) * 10
         for i in reversed(range(pheader.count())):
             w += pheader.itemAt(i).widget().width()
         return w
 
-    def resizeEvent(self, event: QResizeEvent) -> None:
+    def resizeEvent(self, event: QResizeEvent):
+        """Handle a resize event and update the width of any info TextBrowser currently open.
+
+        Overrides the MainWindows resizeEvent() method.
+        """
+
         super().resizeEvent(event)
         allinfos = []
         allinfos.extend(self.profileInfos)
@@ -1197,7 +1482,12 @@ class RvMainWindow(QMainWindow):
             if info:
                 info.setfwidth(self.calcheaderwidth())
 
-    def retranslateAips(self, formats: list) -> None:
+    def retranslateAips(self, formats: list):
+        """Add texts to all components of all AIPs.
+
+        :param formats: A list of formats for each AIP.
+        """
+
         for i in range(len(self.aips)):
             self.aipTitles[i].setText(self._utp.s("AIP") + " " + str(i))
             if i == 0:
@@ -1207,7 +1497,14 @@ class RvMainWindow(QMainWindow):
             self.aipFormats[i].setText(", ".join(formats[i]))
             self.aipDetails[i].setText(self._utp.s("details"))
 
-    def retranslateProfiles(self, nos: list[str], titles: list[str], recoms: list[str]) -> None:
+    def retranslateProfiles(self, nos: list[str], titles: list[str], recoms: list[str]):
+        """Add texts to all components of all profiles.
+
+        :param nos: The numbers that shall be shown for each profile label.
+        :param titles: The profile titles.
+        :param recoms: The short recommendations for each profile.
+        """
+
         self.profilesLabel.setText(self._utp.s("profLabel"))
 
         for i in range(self._pn):
@@ -1215,7 +1512,9 @@ class RvMainWindow(QMainWindow):
             self.profileRecoms[i].setText(recoms[i])
             self.profileDetails[i].setText(self._utp.s("details"))
 
-    def setInfoPage(self, info: dict) -> None:
+    def setInfoPage(self, info: dict):
+        """Update and show the infopage with the given info."""
+
         self.infopage.setHtml(self._utp.constructItb(info))
         self.stackedWidget.setCurrentIndex(1)
 
@@ -1225,7 +1524,17 @@ class RvMainWindow(QMainWindow):
                       aiptype: str,
                       filetype: str,
                       runtime: str,
-                      contains: str) -> None:
+                      contains: str):
+        """Update the VZE overview.
+
+        :param signature: The signature of the VZE. If None is given, it will be set to "?".
+        :param title: The VZE title.
+        :param aiptype: The type of the AIP.
+        :param filetype: The type of the file ("Sachakte", "Personalakte" etc.)
+        :param runtime: The runtime of the VZE.
+        :param contains: The description of the VZE.
+        """
+
         if aiptype == "FILE_COLLECTION":
             aiptype = self._utp.s("typecollection")
         elif aiptype == "EAkte":
@@ -1247,8 +1556,19 @@ class RvMainWindow(QMainWindow):
         ]
         self.ieTextBrowser.setHtml(self._utp.constructIeItb(infos))
 
-    def updateOvProTb(self, no: int, title: str) -> None:
+    def updateOvProTb(self, no: int, title: str):
+        """Update the profile overview.
+
+        :param no: The number of the chosen profile (not its index!).
+        :param title: The title of the chosen profile.
+        """
+
         self.profileTextBrowser.setHtml(self._utp.constructProfItb(no, title))
 
-    def updateOvRepTb(self, nos: list[int], aip: bool = False) -> None:
+    def updateOvRepTb(self, nos: list[int], aip: bool = False):
+        """Update the representations overview.
+
+        :param nos: The numbers of the chosen AIPs.
+        :param aip: Indicates, whether aips have been loaded at all (True) or haven't been loaded yet (False).
+        """
         self.repTextBrowser.setHtml(self._utp.constructOvRepItb(nos, aip))

@@ -1,3 +1,5 @@
+"""Main script starting the Request Viewer GUI and initializing the DIP Request Handler."""
+
 from drh.drh import DIPRequestHandler
 from rv.rv import RequestViewer
 

@@ -6,6 +6,8 @@ from rv.gui import RvMainWindow, MessageBox, MsgTrigger, MsgType
 
 
 class RequestViewer:
+    """Main class for the initialization and management of the Request Viewer application."""
+
     _aips: list[dict]
     # _vze: str # VZE
     _chosenaips: list[int]
@@ -14,6 +16,8 @@ class RequestViewer:
     _output: str
 
     def __init__(self, drh: DIPRequestHandler, texts: str):
+        """Initialize and return a new Request Viewer object."""
+
         self._drh = drh
         self.texts = texts
         self._aips = []
@@ -43,6 +47,7 @@ class RequestViewer:
         self.window = RvMainWindow(len(self._pinfo["nos"]), texts)
         self.window.retranslateProfiles(self._pinfo["nos"], self._pinfo["names"], self._pinfo["recoms"])
 
+        # Button groups for the handling of clicks on buttons.
         self.mbtns = self.window.menuGroup
         self.ibtns = self.window.infoGroup
         self.pbtns = self.window.profileGroup
@@ -58,7 +63,9 @@ class RequestViewer:
         self.window.show()
         self.app.exec()
 
-    def _setclickhandlers(self) -> None:
+    def _setclickhandlers(self):
+        """Set the input handlers for the viewer's components."""
+
         self.mbtns.buttonClicked.connect(self._navigate)
         self.ibtns.buttonClicked.connect(self._navigateinfo)
         self.window.spinnerGoBtn.clicked.connect(self._loadaips)
@@ -79,7 +86,9 @@ class RequestViewer:
     # Navigation and user guidance
     ###############################
 
-    def _updateguidance(self) -> None:
+    def _updateguidance(self):
+        """Update the box highlighting to guide the user."""
+
         if self._aippathneeded:
             self.window.aipFileSpinner.setBoxHighlighting(True)
             self.window.spinnerGoBtn.setBoxHighlighting(False)
@@ -110,13 +119,17 @@ class RequestViewer:
             self.window.goButton.enable(True)
             self.window.goButton.setBoxHighlighting(False)
 
-    def _navigateinfo(self, btn: QAbstractButton) -> None:
+    def _navigateinfo(self, btn: QAbstractButton):
+        """Navigate the infopages."""
+
         id_ = self.ibtns.id(btn)
         if id_-1 < 0:
             id_ = 3
         self.mbtns.button(id_).click()
 
-    def _navigate(self, btn: QAbstractButton) -> None:
+    def _navigate(self, btn: QAbstractButton):
+        """Navigate the main menu (infopages and request dialog)."""
+
         id_ = self.mbtns.id(btn)
         if id_ == 1:
             self.window.setInfoPage(self._drh.getinfo("profiles"))
@@ -127,7 +140,9 @@ class RequestViewer:
         else:
             self.window.stackedWidget.setCurrentIndex(0)
 
-    def _managespinnergobtn(self, text: str) -> None:
+    def _managespinnergobtn(self, text: str):
+        """Update the internal status on change of the input path(s)."""
+
         if text == "" and not self.firstoverallsuccess:
             if not self._aips:
                 self._aippathneeded = True
@@ -137,14 +152,18 @@ class RequestViewer:
             self._aipconfirmneeded = True
         self._updateguidance()
 
-    def _manageoutput(self, text: str) -> None:
+    def _manageoutput(self, text: str):
+        """Update the internal status on change of the output path."""
+
         if text == "":
             self._outputneeded = True
         else:
             self._outputneeded = False
         self._updateguidance()
 
-    def _toggleaip(self, btn: QAbstractButton, checked: bool) -> None:
+    def _toggleaip(self, btn: QAbstractButton, checked: bool):
+        """Choose or unchoose an AIP."""
+
         self._aipuc = True
         if checked:
             self._chosenaips.append(self.rbtns.id(btn))
@@ -154,7 +173,9 @@ class RequestViewer:
             self._chosenaips.remove(self.rbtns.id(btn))
             self.window.updateOvRepTb(self._chosenaips, True)
 
-    def _toggleitb_p(self, btn: QAbstractButton) -> None:
+    def _toggleitb_p(self, btn: QAbstractButton):
+        """Show or hide an info text browser for a profile."""
+
         id_ = self.pdbtns.id(btn)
         if not self.window.profileInfos[id_]:
             pinfo = self._drh.getprofileinfo(id_)
@@ -179,7 +200,9 @@ class RequestViewer:
             self.window.profileInfos[id_] = None
             tb.close()
 
-    def _toggleitb_r(self, btn: QAbstractButton) -> None:
+    def _toggleitb_r(self, btn: QAbstractButton):
+        """Show or hide an info text browser for an AIP."""
+
         id_ = self.rdbtns.id(btn)
         if not self.window.aipInfos[id_]:
             self.window.createitb(
@@ -198,13 +221,17 @@ class RequestViewer:
     # Set default choices
     ######################
 
-    def _setdefaultprofile(self) -> None:
+    def _setdefaultprofile(self):
+        """Set the default profile."""
+
         no = self._drh.getdefaultprofile()
         profuc = self._profuc
         self.window.profileTitles[no].click()
         self._profuc = profuc
 
-    def _setdefaultaips(self) -> None:
+    def _setdefaultaips(self):
+        """Set the default AIPs for the current profile."""
+
         default = self._drh.getdefaultaips(self._profile)
         aipuc = self._aipuc
         if default == "all":
@@ -232,7 +259,9 @@ class RequestViewer:
     # Set user choices
     ###################
 
-    def _loadaips(self) -> None:
+    def _loadaips(self):
+        """Load and show the AIPs chosen in the aipFileSpinner's FileDialog."""
+
         aips = self.window.aipFileSpinner.paths
         if aips is None:
             err = NoPathError("")
@@ -279,7 +308,9 @@ class RequestViewer:
             info["vzeinfo"]["contains"]
         )
 
-    def _setprofile(self, btn: QAbstractButton) -> None:
+    def _setprofile(self, btn: QAbstractButton):
+        """Choose a profile and update the internal status."""
+
         self._profuc = True
         self._profile = self.pbtns.id(btn)
         self.window.updateOvProTb(self._pinfo["nos"][self._profile], self._pinfo["names"][self._profile])
@@ -316,7 +347,9 @@ class RequestViewer:
         if self._aips and (not self._drh.aipchoice(self._profile) or not self._aipuc):
             self._setdefaultaips()
 
-    def _setdelivery(self, btn: QAbstractButton) -> None:
+    def _setdelivery(self, btn: QAbstractButton):
+        """Choose a delivery type and update the internal status."""
+
         self._delivuc = True
         id_ = self.obtns.id(btn)
         if id_ == 0:
@@ -326,7 +359,9 @@ class RequestViewer:
         elif id_ == 2:
             self._delivery = "both"
 
-    def _enablealldeliv(self) -> None:
+    def _enablealldeliv(self):
+        """Set all delivery options to enabled."""
+
         self.window.btnViewer.enable(True)
         self.window.btnDownload.enable(True)
         self.window.btnBoth.enable(True)
@@ -335,7 +370,12 @@ class RequestViewer:
     # Start request
     ################
 
-    def _checkrequest(self) -> None:
+    def _checkrequest(self):
+        """Check, whether all conditions for a successfull request are given.
+
+        If not, show a message.
+        """
+
         if self.window.goButton.ispseudoenabled():
             msg = MessageBox(self.window, MsgType.ERROR, MsgTrigger.GOBTN, self.texts,)
             msg.show()
@@ -347,13 +387,21 @@ class RequestViewer:
         else:
             self._startrequest()
 
-    def _checkcancel(self, req: bool) -> None:
+    def _checkcancel(self, req: bool):
+        """Start or cancel a request.
+
+        :param req: Indicates, whether the request should be started or not.
+        """
+
         if req:
             self._startrequest()
         else:
             return
 
-    def _startrequest(self) -> None:
+    def _startrequest(self):
+        """Start a request and handle the response."""
+
+        # Create a user choice dictionary.
         uc = {
             "vzePath": None,  # self.window.vzeFileSpinner.paths, # VZE
             "profileNo": self._profile,
@@ -363,6 +411,7 @@ class RequestViewer:
         }
         resp = self._drh.startrequest(uc).getfullresponse()
 
+        # Handle the response.
         if not resp["errors"]:
             output = [resp["success"][-1]["detail"]]
             if self._delivery == "both":
