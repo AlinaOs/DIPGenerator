@@ -1494,7 +1494,24 @@ class RvMainWindow(QMainWindow):
                 self.aipDescs[i].setText(self._utp.s("root"))
             else:
                 self.aipDescs[i].setText(self._utp.s("rep"))
-            self.aipFormats[i].setText(", ".join(formats[i]))
+            f = ""
+            fi = 0
+            for fo in formats[i]:
+                if len(f) + len(fo) > 50:
+                    if fi == 0:
+                        f = fo
+                        fi += 1
+                    if len(formats) > fi:
+                        f += ", ... [+" + str(len(formats) - fi) + "]"
+                    break
+                if fi:
+                    fli = [f, fo]
+                    f = ", ".join(fli)
+                else:
+                    f = fo
+                fi += 1
+
+            self.aipFormats[i].setText(f)
             self.aipDetails[i].setText(self._utp.s("details"))
 
     def retranslateProfiles(self, nos: list[str], titles: list[str], recoms: list[str]):

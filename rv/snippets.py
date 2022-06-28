@@ -118,9 +118,9 @@ class UiTextProvider:
 
         The given list of files contained in the AIP should consist of one dictionary
         per file, where each dictionary has the following structure:
-            * "name": The main title of the text (str).
-            * "format": A list of sections, each one being a dictionary with the following structure.
-            * "size": The subtitle of the section (str).
+            * "name": The original filename.
+            * "format": The current format of the file.
+            * "size": The size of the file in Kb.
             * "preslev": The preservation level of the file.
 
         :param date: The creation date of the AIP as string.

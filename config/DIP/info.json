@@ -3,54 +3,56 @@
     "main": "Repräsentationen",
     "sections": [
       {
-        "sub": "Untertitel",
+        "sub": "Was sind AIPs/Repräsentationen?",
         "paragraphs": [
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum",
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum"
+          "AIP steht für \"Archival Information Package\". Damit ist das Datenpaket gemeint, das im Archiv gespeichert ist. Jedes AIP repräsentiert genau ein Archivale. Man spricht hierbei von einer Repräsentation, da digitale Archivalien sehr fluide sind: Es gibt kein richtiges Original, da man digitale Dateien identisch kopieren kann.",
+          "Außerdem können zwei verschiedene Dateien dennoch dieselben signifikanten Eigenschaften bewahren, weshalb sie beide eine valide <i>Repräsentation</i> desselben Inhalts darstellen. Zuletzt besteht ein Archivale in der Regel aus mehreren Dateien, die gemeinsam ein Informationspaket bilden. Man spricht darum von Repräsentationen, statt von Dateien."
+        ]
+      },
+      {
+        "sub": "Warum gibt es verschiedene Repräsentationen zum selben Archivale?",
+        "paragraphs": [
+          "Die Computertechnik schreitet rasant voran. eue Technologien entstehen, alte Technologien werden obsolet. Oft lassen sich alte Formate und Dateien nicht mehr richtig anzeigen und meist hat man nicht mal mehr das passende Programm auf dem Rechner. Um historische digitale Unterlagen dennoch weiterhin anzeigen zu können, werden die Daten von Zeit zu Zeit in neue, lesbare Formate konvertiert, die man am besten ohne Weiteres am eigenen Computer lesen kann. Dabei wird versucht, die wichtigen Merkmale des Inhalts der Ursprungsdatei - die sogenannten signifikanten Eigenschaften zu bewahren. Ein Beispiel für so eine Konvertierung wäre eine Konvertierung von Word zu PDF.",
+          "Wenn eine Datei in ein neues Format konvertiert wird, dann erhöht sich ihr Erhaltungslevel (Preservation Level) und ein neues AIP wird erzeugt. Das alte AIP wird jedoch nicht gelöscht. Denn bei einer Konvertierung geht immer auch etwas verloren und die Datei sieht am Ende nicht genau so aus, wie sie ursprünglich ausgesehen hat. Das ist sehr problematisch zum Beispiel für die Wissenschaft, wo sichergestellt werden muss, dass die im Archiv liegenden Archivalien authentisch sind und so sind, wie sie früher waren. Damit Benutzer*innen in einem Archiv also weiterhin alle Schritte nachvollziehen können, die im Laufe des \"Archivlebens\" eines Archivales an ihm vollzogen wurden, werden alle AIPs, auch die veralteten, aufbewahrt."
+        ]
+      },
+      {
+        "sub": "Welche Repräsentation ist die beste?",
+        "paragraphs": [
+          "Die Antwort auf diese Frage ist nicht universal und hängt immer vom Einzelfall ab. Es kommt im Wesentlichen auf zwei Fragen an:",
+          "Erstens, welche Möglichkeiten haben Sie, die Dateien zu öffnen? Wenn Sie die entsprechenden Programme auf Ihrem Rechner installiert haben, oder technisch so versiert sind, dass Sie die Dateien selbst auf eine andere Art als mit dem vorgesehenen Programm öffnen können, dann können Sie problemlos auch eine veraltete Repräsentation anschauen. Falls Sie diese Möglichkeiten jedoch nicht haben, dann könnte es sinnvoller für Sie sein, die aktuellste Repräsentation zu wählen, die Sie mit großer Wahrscheinlichkeit mit den Standardprogrammen eines Computers öffnen können.",
+          "Zweitens, welches Interesse haben Sie an den Daten? Wenn Sie sich zum Beispiel nur kurz etwas nachschauen möchten, dann ist auch hier die aktuellste Repräsentation am einfachsten. Wenn Sie jedoch die Authentizität der Dokumente prüfen wollen, dann müssen Sie mitunter auch einen Blick in ältere Repräsentationen werfen. Manchmal kann es sogar relevant sein, zwei Repräsentationen miteinander zu vergleichen.",
+          "Sie haben darum bei der DIP-Anforderung die Möglichkeit, selbst auszuwählen, welche Repräsentation(en) Sie sehen wollen. Falls Sie Sich lieber auf die Empfehlung des Archivs verlassen, dann müssen Sie gar nichts auswählen. Es wird dann die Standard-Auswahl getroffen, die für das von Ihnen gewählte DIP-Profil vorgesehen ist."
         ]
       }
     ]
   },
   "profiles": {
-    "main": "Profile",
+    "main": "DIP-Profile",
     "sections": [
       {
-        "sub": "Untertitel",
+        "sub": "Was sind DIPs?",
         "paragraphs": [
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum"
+          "DIP steht für \"Dissemination Information Package\" und bezeichnet ein Datenpaket, das archivische Daten enthält, die zur Auslieferung an Archivbenutzer*innen vorgesehen sind. Diese können, müssen sich aber nicht unterscheiden von den AIPs, den \"Archival Information Packages\". Diese sind die Datenpakete, die im Archivspeicher liegen. Diese Datenpakete enthalten zunächst einmal die archivierten Dateien. Sie enthalten aber auch viele technische und administrative Metadaten über die archivierten Dateien."
+        ]
+      },
+      {
+        "sub": "Was sind Metadaten?",
+        "paragraphs": [
+          "Metadaten sind Daten <i>über</i> andere Daten. In diesem Fall heißt das, die Metadaten enthalten Informationen über die archivierten Dateien, die größtenteils nicht aus den archivierten Dateien selbst hervorgehen. Das sind einerseits Daten auf Ebene des ganzen Archivales (IE-Ebene), auf Ebene der einzelnen Inhalte (Item-Ebene) und auf Ebene der Dateien, die zu diesen Inhalten gehören (technische Daten). Außerdem gibt es Daten zum Archivierungsprozess."
+        ]
+      },
+      {
+        "sub": "Was sind DIP-Profile?",
+        "paragraphs": [
+          "Metadaten können schnell unübersichtlich werden. Wenn man zum Beispiel nur kurz etwas in einer PDF-Datei nachschauen möchte, dann sind all die technischen Details, Prüfsummen und Protokolle eher verwirrend. Wenn man hingegen die technische Authentizität von Dateien untersuchen möchte, dann sind sie sogar wichtig. Um die Benutzung von Archivalien zu erleichtern, werden für Sie darum unterschiedliche Arten der Aufbereitung von Metadaten bereitgestellt, aus denen Sie je nach Ihren eigenen Anforderungen wählen können. Je nach gewähltem DIP-Profil werden Sie am Ende eine unterschiedliche Auswahl an Metadaten sehen oder nicht sehen. So können Sie entscheiden, wie viele und welche Erschließungsinformationen Sie für ihr Vorhaben benötigen."
+        ]
+      },
+      {
+        "sub": "Welches DIP-Profil ist das richtige für mich?",
+        "paragraphs": [
+          "Das können nur Sie allein entscheiden, denn Sie wissen am besten, was Sie mit den Archivalien vorhaben und was Sie herausfinden wollen. Wir liefern Ihnen möglichst viele Informationen darüber, welche Metadaten in den Profilen enthalten sind (Klick auf Details). Außerdem geben wir Ihnen eine kurze Empfehlung, für welche Interessen/Nutzergruppen ein Profil geeignet ist. Sie sind jedoch absolut frei, das Profil zu wählen, das Sie am passendsten empfinden.",
+          "Schauen Sie Sich die Informationen zu den einzelnen Profile genau an, und entscheiden Sie selbst, oder wählen Sie einfach dasjenige Profil, dessen Empfehlung am besten zu Ihnen passt!"
         ]
       }
     ]
@@ -59,11 +61,32 @@
     "main": "Über dieses Programm",
     "sections": [
       {
-        "sub": "Untertitel",
+        "sub": "",
         "paragraphs": [
-          "Lorem ipsum",
-          "lorem ipsum dolor sit",
-          "Amet dolor lorem ipsum"
+          "Dieses Programm ist ein Prototyp für eine Software, die abhängig von Entscheidungen der User profilspezifische DIPs aus den AIPs der Langzeitarchivierungslösung DiPS.kommunal erzeugt. AIP bedeutet hierbei \"Archival Information Package\" und DIP steht für \"Dissemination Information Package\". Ersteres bezeichnet die archivischen Daten, wie sie im Archivspeicher vorliegen, und letzteres meint ein Paket mit archivischen Daten, welches zur Auslieferung an Nutzende des Archivs vorgesehen ist. Der DIP Request Viewer wurde im Sommer 2022 im Rahmen eines Praktikums entwickelt.",
+          "Hier finden Sie eine Kurzanleitung zum Programm."
+        ]
+      },
+      {
+        "sub": "Schritt 1: Archivale wählen",
+        "paragraphs": [
+          "Zunächst muss ein Archivale ausgewählt werden, indem im Feld AIP-Datei alle zugehörigen AIP-Dateien (in Form von .tar-Paketen) angegeben werden. Es können entweder mehrere Einzeldateien ausgewählt werden oder es kann ein Ordner ausgewählt werden, in dem sich alle AIPs des Archivales befinden (aber keine AIPs von anderen Archivalen!).",
+          "Dann muss die Auswahl mit einem Klick auf das Häkchen bestätig werden. Die AIP-Dateien werden jetzt geladen und unter Schritt 3 angezeigt."
+        ]
+      },
+      {
+        "sub": "Schritt 2: DIP-Profil wählen",
+        "paragraphs": [
+          "Hier muss ein DIP-Profil ausgewählt werden. Wenn kein Profil ausgewählt wird, dann wird das Standard-Profil verwendet, das bereits ausgewählt ist (rot markiert). Die Profile beeinflussen, wie die Daten aus den AIPs für das gewünschte DIP aufbereitet werden. Es gibt eine eigene Info-Seite darüber, was DIP-Profile sind.",
+          "Mit Klick auf \"Details\" können für jedes Profil detaillierte Informationen dazu angezeigt werden, welche Metadaten in dem Profil enthalten sind, und welche nicht. Die Empfehlungen sind dabei nicht bindend. Wissenschaftliche Nutzende zum Beispiel müssen nicht das Profil 2 wählen, sondern können je nach ihrem Bedarf auch eines der anderen Profile nutzen."
+        ]
+      },
+      {
+        "sub": "Schritt 3: Repräsentationen wählen",
+        "paragraphs": [
+          "Im letzten Schritt müssen die AIPs gewählt werden, die in dem DIP enthalten sein sollen. Auch hier wird eine Standard-Auswahl getroffen, falls Sie als Nutzer*in keine Auswahl treffen. Es gibt auch hier eine eigene Info-Seite darüber, was Repräsentationen sind.",
+          "Mit Klick auf \"Details\" können für jedes AIP detaillierte Informationen angezeigt werden, die Ihnen helfen zu beurteilen, ob Sie das AIP einsehen wollen und können. Wenn Sie zum Beispiel keinen Zugang zu spezieller Software haben, um ältere Formate zu öffnen, sollten Sie ein aktuelleres AIP nutzen."
+
         ]
       }
     ]
