@@ -1,4 +1,5 @@
 import ast
+import os.path
 from enum import Enum
 from PySide6.QtCore import (QRect, QSize, Qt, Signal)
 from PySide6.QtGui import (QBrush, QColor, QCursor,
@@ -517,6 +518,7 @@ class FileSpinner:
         self._type = type_
         self._highlighted = False
         self.paths = None
+        self._dir = os.path.join(os.path.join(os.environ["USERPROFILE"]), "Desktop")
 
         self.edit = ClickableLineEdit(parent)
         self.edit.textChanged.connect(self.update)
@@ -561,6 +563,7 @@ class FileSpinner:
 
         dialog = QFileDialog()
         dialog.setViewMode(QFileDialog.Detail)
+        dialog.setDirectory(self._dir)
         if filemode == "dir":
             dialog.setFileMode(QFileDialog.Directory)
             dialog.setWindowIcon(icon_directory)
@@ -577,12 +580,14 @@ class FileSpinner:
             if filemode == "dir" or self._type == "v":
                 self.edit.setText(dialog.selectedFiles()[0])
                 self.paths = dialog.selectedFiles()[0]
+                self._dir = self.paths
             else:
                 if len(dialog.selectedFiles()) > 1:
                     self.edit.setText(str(dialog.selectedFiles()))
                 else:
                     self.edit.setText(dialog.selectedFiles()[0])
                 self.paths = dialog.selectedFiles()
+                self._dir = os.path.dirname(self.paths[0])
 
     def setToolTip(self, text1: str, text2: str = None):
         """Set a tooltip for the FileSpinner's button(s).
